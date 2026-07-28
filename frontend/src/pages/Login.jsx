@@ -1,3 +1,4 @@
+import Swal from "sweetalert2";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Background from "../components/Background";
@@ -37,7 +38,17 @@ export default function Login() {
             localStorage.setItem("username", data.username);
             localStorage.setItem("email", data.email);
 
-            alert("Login Successful");
+            await Swal.fire({
+                icon: "success",
+                title: "Login Successful",
+                text: `Welcome back, ${data.username}!`,
+                background: "#101722",
+                color: "#ffffff",
+                confirmButtonColor: "#00D9FF",
+                timer: 1800,
+                showConfirmButton: false,
+                timerProgressBar: true
+            });
 
             switch (data.role) {
 
@@ -61,10 +72,16 @@ export default function Login() {
 
         catch (err) {
 
-            alert(
-                err.response?.data?.detail ||
-                "Invalid Email or Password"
-            );
+            Swal.fire({
+                icon: "error",
+                title: "Login Failed",
+                text:
+                    err.response?.data?.detail ||
+                    "Invalid Email or Password",
+                background: "#101722",
+                color: "#ffffff",
+                confirmButtonColor: "#EF4444"
+            });
 
         }
 
@@ -78,7 +95,7 @@ export default function Login() {
 
                 <div className="left">
 
-<span className="login-badge">SMART TRAFFIC SYSTEM</span>
+                    <span className="login-badge">SMART TRAFFIC SYSTEM</span>
 
                     <h1>
                         Intelligent
