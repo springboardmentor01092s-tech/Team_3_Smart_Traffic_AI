@@ -23,3 +23,16 @@ class UserResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+# ---------------- Activity Log ----------------
+
+class ActivityLogResponse(BaseModel):
+    id: int
+    user_id: int
+    action: str
+    ip_address: str | None
+    created_at: datetime
+
+    class Config:
+        from_attributes = True

@@ -1,16 +1,22 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from .database import engine
 from . import models
-from .routers import auth
-from fastapi.middleware.cors import CORSMiddleware
+from .routers import auth, activity
 
+# Create all database tables
 models.Base.metadata.create_all(bind=engine)
 
-app = FastAPI()
+app = FastAPI(
+    title="Traffic Management System API"
+)
 
+# Register routers
 app.include_router(auth.router)
+app.include_router(activity.router)
 
+# CORS Configuration
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
@@ -21,6 +27,10 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Home Route
 @app.get("/")
 def home():
-    return {"message": "Traffic Management System API"}
+    return {
+        "message": "Traffic Management System API"
+    }

@@ -1,3 +1,4 @@
+from fastapi import Request
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from ..utils import hash_password
@@ -49,7 +50,11 @@ def register(user: schemas.UserCreate, db: Session = Depends(get_db)):
     return new_user
 
 @router.post("/login")
-def login(user: schemas.UserLogin, db: Session = Depends(get_db)):
+def login(
+    request: Request,
+    user: schemas.UserLogin,
+    db: Session = Depends(get_db)
+):
 
     # Find user by email
     db_user = db.query(models.User).filter(
@@ -70,6 +75,16 @@ def login(user: schemas.UserLogin, db: Session = Depends(get_db)):
             detail="Invalid email or password"
         )
 
+    activity = models.ActivityLog(
+    user_id=db_user.id,
+    action="User Logged In",
+    ip_address=request.client.host
+)
+
+    db.add(activity)
+    db.commit()
+
+    
     access_token = create_access_token(
         {
             "sub": db_user.email,
