@@ -15,6 +15,7 @@ env/
 .env
 
 # SQLite journal files
+Backend/users.db
 *.db-journal
 
 # =====================================
