@@ -16,22 +16,22 @@ that's expected, this zip's versions supersede them).
 Files being added/replaced:
 ```
 Backend/
-├── requirements.txt          (replace)
-├── .gitignore                 (add, or merge with your existing one)
+├── requirements.txt          
+├── .gitignore                 
 └── app/
-    ├── database.py             (replace)
-    ├── models.py                (replace — now includes TrafficData)
-    ├── schemas.py                (replace — now includes Traffic/Prediction schemas)
-    ├── auth_handler.py            (replace)
-    ├── dependencies.py             (replace — now includes operator_required)
-    ├── main.py                      (replace — registers all 5 routers)
-    ├── ml/                            (new empty folder — see step 2)
+    ├── database.py             
+    ├── models.py                
+    ├── schemas.py                
+    ├── auth_handler.py            
+    ├── dependencies.py             
+    ├── main.py                      
+    ├── ml/                            
     └── routers/
-        ├── auth.py                    (replace)
-        ├── traffic.py                  (NEW — this was completely missing)
-        ├── prediction.py                (replace — now uses your trained model)
-        ├── reports.py                    (replace — fixes the earlier bugs)
-        └── routes.py                      (replace — fixes the earlier bugs)
+        ├── auth.py                    
+        ├── traffic.py                  
+        ├── prediction.py               
+        ├── reports.py                    
+        └── routes.py                      
 ```
 
 ### 2. Add your trained model file
@@ -58,29 +58,7 @@ Open `http://localhost:8000/docs` — you should see 5 sections: Auth, Traffic,
 Prediction, Reports, Routes. Test each one for real (register → login →
 Authorize with the token → try each endpoint) before pushing anything.
 
-### 4. Push it — exact git commands
 
-```bash
-cd Team_3_Smart_Traffic_AI      # your repo root, NOT the Backend folder
-git checkout testing            # or your own feature branch if you already made one
-git pull origin testing         # get any teammate updates first
-git checkout -b traffic-prediction-backend   # your own branch — don't commit straight to testing
-
-git add Backend/
-git commit -m "Add traffic ingestion, ML prediction, reports, and route recommendation backend
-
-- models.py: add TrafficData model
-- schemas.py: add TrafficDataIn/Out and PredictionIn schemas
-- routers/traffic.py: new - POST /traffic/ingest, GET /traffic/live, GET /traffic/history
-- routers/prediction.py: wired to a trained Random Forest model (94.3% accuracy,
-  trained on Kaggle traffic dataset with a corrected congestion_level target)
-- routers/reports.py: GET /reports/traffic-summary, GET /reports/export-csv
-- routers/routes.py: GET /routes/recommend - suggests the less congested road
-  between predefined origin/destination pairs
-- requirements.txt: add joblib, pandas, scikit-learn, pin bcrypt==4.0.1"
-
-git push -u origin traffic-prediction-backend
-```
 
 Then go to GitHub and open a **Pull Request** from
 `traffic-prediction-backend` → `testing`, so your mentor/team can see the
