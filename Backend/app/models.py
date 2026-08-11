@@ -14,6 +14,7 @@ class User(Base):
     role: Mapped[str]  # admin, operator, commuter
     created_at: Mapped[datetime] = mapped_column(server_default=func.now())
 
+
 # --- Traffic Monitoring Table ---
 class TrafficData(Base):
     __tablename__ = "traffic_data"
@@ -23,9 +24,12 @@ class TrafficData(Base):
     vehicle_count: Mapped[int]
     average_speed: Mapped[float]
     congestion_level: Mapped[str]  # Low, Medium, High
-    weather: Mapped[str] = mapped_column(default="Clear")
-    accident: Mapped[bool] = mapped_column(default=False)
+    
+    weather: Mapped[str] = mapped_column(server_default="Clear", default="Clear")
+    accident: Mapped[bool] = mapped_column(server_default="0", default=False)
+    
     recorded_at: Mapped[datetime] = mapped_column(server_default=func.now())
+
 
 # --- AI Prediction Table ---
 class TrafficPrediction(Base):
