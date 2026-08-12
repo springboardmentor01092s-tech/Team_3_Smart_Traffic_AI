@@ -3,13 +3,19 @@ import pandas as pd
 
 from ..dependencies import get_current_user
 from .. import schemas
-from ..main import ml_bundle
+from ..ml_loader import ml_bundle
 
 router = APIRouter(prefix="/prediction", tags=["Prediction"])
 
 
 @router.post("/predict")
 def predict(payload: schemas.PredictionIn, current_user=Depends(get_current_user)):
+    if ml_bundle is None:
+        raise HTTPException(
+            status_code=503,
+            detail="Prediction model is not loaded on the server yet."
+        )
+
     model = ml_bundle["model"]
     city_zone_encoder = ml_bundle["city_zone_encoder"]
     road_type_encoder = ml_bundle["road_type_encoder"]
