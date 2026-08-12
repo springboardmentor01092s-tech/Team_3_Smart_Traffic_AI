@@ -8,6 +8,13 @@ router = APIRouter(prefix="/routes", tags=["Routes"])
 
 CONGESTION_SCORE = {"Low": 1, "Medium": 2, "High": 3}
 
+ROAD_DISTANCE_KM = {
+    "NH-24": 22.0,
+    "Outer Ring Road": 28.5,
+    "Ring Road": 18.0,
+    "MG Road": 12.5,
+}
+
 ROUTE_OPTIONS = {
     ("Connaught Place", "Noida"): ["NH-24", "Outer Ring Road"],
     ("Connaught Place", "Gurgaon"): ["Ring Road", "MG Road"],
@@ -29,10 +36,19 @@ def recommend_route(origin: str, destination: str, db: Session = Depends(get_db)
             .first()
         )
         congestion = latest.congestion_level if latest else "Medium"
+        avg_speed = latest.average_speed if latest else 30.0  
+        distance_km = ROAD_DISTANCE_KM.get(road, 15.0)  
+        
+        safe_speed = max(avg_speed, 5.0)
+        travel_time_minutes = round((distance_km / safe_speed) * 60, 1)
+
         results.append({
             "road_name": road,
             "congestion_level": congestion,
             "score": CONGESTION_SCORE.get(congestion, 2),
+            "distance_km": distance_km,
+            "average_speed": avg_speed,
+            "estimated_travel_time_minutes": travel_time_minutes,
         })
 
     results.sort(key=lambda r: r["score"])
