@@ -1,38 +1,30 @@
 from datetime import datetime, timedelta, timezone
+from typing import Optional, Dict, Any
 from jose import jwt, JWTError
 
-SECRET_KEY = "your_super_secret_key"
+# Production-grade configuration defaults
+SECRET_KEY = "your-secret-key-change-this"
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
+ACCESS_TOKEN_EXPIRE_MINUTES = 60
 
 
-def create_access_token(data: dict):
+def create_access_token(data: Dict[str, Any]) -> str:
+    """
+    Generates an encrypted OAuth2 JWT access token with an expiration timestamp.
+    """
     to_encode = data.copy()
-
-    expire = datetime.now(timezone.utc) + timedelta(
-        minutes=ACCESS_TOKEN_EXPIRE_MINUTES
-    )
-
+    expire = datetime.now(timezone.utc) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     to_encode.update({"exp": expire})
-
-    encoded_jwt = jwt.encode(
-        to_encode,
-        SECRET_KEY,
-        algorithm=ALGORITHM
-    )
-
-    return encoded_jwt
+    
+    return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
 
-def verify_access_token(token: str):
+def verify_access_token(token: str) -> Optional[Dict[str, Any]]:
+    """
+    Decodes and validates a JWT token. 
+    Returns payload dictionary or None if the token is invalid/expired.
+    """
     try:
-        payload = jwt.decode(
-            token,
-            SECRET_KEY,
-            algorithms=[ALGORITHM]
-        )
-
-        return payload
-
+        return jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
     except JWTError:
         return None

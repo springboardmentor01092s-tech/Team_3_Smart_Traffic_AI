@@ -1,15 +1,16 @@
 from fastapi import FastAPI
-
-from .database import engine
-from . import models
-from .routers import auth
 from fastapi.middleware.cors import CORSMiddleware
+from .database import engine, Base
+from . import ml_loader  
+from .routers import auth, traffic, prediction, routes,reports
 
-models.Base.metadata.create_all(bind=engine)
+Base.metadata.create_all(bind=engine)
 
-app = FastAPI()
-
-app.include_router(auth.router)
+app = FastAPI(
+    title="TrafficVision AI API",
+    description="Smart Traffic Prediction & Congestion Management Platform Backend",
+    version="1.0.0"
+)
 
 app.add_middleware(
     CORSMiddleware,
@@ -21,6 +22,14 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-@app.get("/")
+
+app.include_router(auth.router)
+app.include_router(traffic.router)
+app.include_router(prediction.router)
+app.include_router(routes.router)
+app.include_router(reports.router)
+
+@app.get("/", tags=["Root"])
 def home():
-    return {"message": "Traffic Management System API"}
+    """Application Health Check Endpoint."""
+    return {"message": "TrafficVision AI System API is running smoothly."}
