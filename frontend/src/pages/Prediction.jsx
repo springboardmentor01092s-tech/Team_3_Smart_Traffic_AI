@@ -1,5 +1,7 @@
 import { useState } from "react";
 import api from "../services/api";
+import Layout from "../components/admin/Layout";
+import OperatorSidebar from "../components/OperatorSidebar";
 import "../styles/prediction.css";
 
 const DAYS = [
@@ -12,7 +14,8 @@ const DAYS = [
   { label: "Sunday", value: 6 },
 ];
 
-export default function Prediction() {
+// Shared prediction form & result — all logic preserved exactly as-is
+function PredictionContent() {
   const [form, setForm] = useState({
     traffic_volume: 100,
     average_speed_kmph: 30,
@@ -181,4 +184,27 @@ export default function Prediction() {
       )}
     </div>
   );
+}
+
+// Role-aware wrapper — same pattern as LiveMap.jsx
+export default function Prediction() {
+  const userRole = localStorage.getItem("role") || "commuter";
+
+  if (userRole === "admin") {
+    return <Layout><PredictionContent /></Layout>;
+  }
+
+  if (userRole === "operator") {
+    return (
+      <div className="operator-layout">
+        <OperatorSidebar />
+        <div className="operator-dashboard operator-page-content animate-fade-in" style={{ padding: "30px", width: "100%", minHeight: "100vh" }}>
+          <PredictionContent />
+        </div>
+      </div>
+    );
+  }
+
+  // Commuter/User — no sidebar, just the content
+  return <PredictionContent />;
 }

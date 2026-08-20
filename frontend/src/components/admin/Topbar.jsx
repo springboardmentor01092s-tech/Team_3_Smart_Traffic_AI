@@ -2,15 +2,13 @@ import { motion } from "framer-motion";
 import {
     Search,
     Bell,
-    Sun,
-    UserCircle2,
-    ChevronDown,
     Clock3
 } from "lucide-react";
 
 import { useEffect, useState } from "react";
 
 import "../../styles/admin/topbar.css";
+import UserMenu from "../UserMenu";
 
 export default function Topbar() {
 
@@ -136,20 +134,6 @@ export default function Topbar() {
                         scale:1.08
                     }}
 
-                    className="icon-btn"
-
-                >
-
-                    <Sun size={20}/>
-
-                </motion.button>
-
-                <motion.button
-
-                    whileHover={{
-                        scale:1.08
-                    }}
-
                     className="icon-btn notification"
 
                 >
@@ -164,37 +148,7 @@ export default function Topbar() {
 
                 </motion.button>
 
-                <motion.div
-
-                    whileHover={{
-                        scale:1.03
-                    }}
-
-                    className="profile"
-
-                >
-
-                    <UserCircle2 size={42}/>
-
-                    <div>
-
-                        <h4>
-
-                            {username}
-
-                        </h4>
-
-                        <span>
-
-                            Administrator
-
-                        </span>
-
-                    </div>
-
-                    <ChevronDown size={18}/>
-
-                </motion.div>
+                <UserMenu />
 
             </div>
 

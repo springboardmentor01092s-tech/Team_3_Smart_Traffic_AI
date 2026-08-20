@@ -1,12 +1,10 @@
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
+import { NavLink } from "react-router-dom";
 
 import {
     Search,
     Bell,
-    Sun,
-    UserCircle2,
-    ChevronDown,
     Clock3,
     MapPinned,
     Route,
@@ -23,6 +21,7 @@ import {
 } from "lucide-react";
 
 import "../styles/commuterDashboard.css";
+import UserMenu from "../components/UserMenu";
 
 const stats = [
   {
@@ -202,20 +201,6 @@ useEffect(() => {
         <motion.button
 
             whileHover={{
-                rotate:20
-            }}
-
-            className="icon-btn"
-
-        >
-
-            <Sun size={20}/>
-
-        </motion.button>
-
-        <motion.button
-
-            whileHover={{
                 scale:1.08
             }}
 
@@ -233,41 +218,20 @@ useEffect(() => {
 
         </motion.button>
 
-        <motion.div
-
-            whileHover={{
-                scale:1.03
-            }}
-
-            className="profile"
-
-        >
-
-            <UserCircle2 size={42}/>
-
-            <div>
-
-                <h4>
-
-                    {username}
-
-                </h4>
-
-                <span>
-
-                    Commuter
-
-                </span>
-
-            </div>
-
-            <ChevronDown size={18}/>
-
-        </motion.div>
+        <UserMenu />
 
     </div>
 
 </motion.header>
+
+      <nav className="commuter-nav" aria-label="Commuter navigation">
+        <NavLink to="/commuter" end>Home</NavLink>
+        <NavLink to="/live-map">Live Traffic</NavLink>
+        <NavLink to="/prediction">Prediction</NavLink>
+        <a href="/commuter#routes">Routes</a>
+        <NavLink to="/alerts">Alerts</NavLink>
+        <a href="/commuter#profile">Profile</a>
+      </nav>
 
       <div className="dashboard-container">
 

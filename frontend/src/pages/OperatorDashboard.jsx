@@ -11,7 +11,6 @@ import {
     Bell,
     Camera,
     Car,
-    ChevronDown,
     Clock3,
     Cpu,
     Map,
@@ -22,13 +21,14 @@ import {
     Signal,
     Sun,
     TrendingUp,
-    UserCircle2,
     Wifi,
     Zap
 
 } from "lucide-react";
 
 import "../styles/operatorDashboard.css";
+import OperatorSidebar from "../components/OperatorSidebar";
+import UserMenu from "../components/UserMenu";
 
 const stats = [
 
@@ -148,7 +148,11 @@ export default function OperatorDashboard(){
 
     return(
 
-        <div className="operator-dashboard">
+        <div className="operator-layout">
+
+            <OperatorSidebar />
+
+            <div className="operator-dashboard operator-page-content">
 
             <Particles
 
@@ -263,12 +267,6 @@ export default function OperatorDashboard(){
 
                     </div>
 
-                    <button className="icon-btn">
-
-                        <Sun size={20}/>
-
-                    </button>
-
                     <button className="icon-btn notification">
 
                         <Bell size={20}/>
@@ -281,29 +279,7 @@ export default function OperatorDashboard(){
 
                     </button>
 
-                    <div className="profile">
-
-                        <UserCircle2 size={40}/>
-
-                        <div>
-
-                            <h4>
-
-                                {username}
-
-                            </h4>
-
-                            <span>
-
-                                Operator
-
-                            </span>
-
-                        </div>
-
-                        <ChevronDown size={18}/>
-
-                    </div>
+                    <UserMenu />
 
                 </div>
 
@@ -1237,6 +1213,8 @@ export default function OperatorDashboard(){
                     </div>
 
                 </motion.div>
+
+            </div>
 
             </div>
 

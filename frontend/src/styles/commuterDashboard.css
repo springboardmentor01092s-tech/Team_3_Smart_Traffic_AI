@@ -1608,3 +1608,50 @@ body{
     font-size:12px;
 
 }
+
+.commuter-nav{
+
+    display:flex;
+    align-items:center;
+    gap:8px;
+    padding:12px 30px;
+    background:rgba(17,29,50,.85);
+    border-bottom:1px solid rgba(255,255,255,.05);
+
+}
+
+.commuter-nav a{
+
+    color:var(--muted);
+    font-size:14px;
+    font-weight:500;
+    padding:9px 14px;
+    border-radius:10px;
+    transition:.3s;
+
+}
+
+.commuter-nav a:hover,
+.commuter-nav a.active{
+
+    color:white;
+    background:#16233d;
+
+}
+
+@media(max-width:768px){
+
+    .commuter-nav{
+
+        overflow-x:auto;
+        padding:10px 20px;
+
+    }
+
+    .commuter-nav a{
+
+        white-space:nowrap;
+
+    }
+
+}

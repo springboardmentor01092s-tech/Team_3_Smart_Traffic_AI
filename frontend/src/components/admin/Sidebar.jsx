@@ -6,7 +6,6 @@ import {
     TriangleAlert,
     BarChart3,
     FileText,
-    Settings,
     LogOut,
     ChevronLeft,
     ChevronRight,
@@ -17,55 +16,21 @@ import { NavLink } from "react-router-dom";
 import { useState } from "react";
 import "../../styles/admin/sidebar.css";
 
-export default function Sidebar() {
+const adminMenuItems = [
+    { title: "Dashboard", icon: <LayoutDashboard size={22} />, path: "/admin" },
+    { title: "Live Traffic", icon: <Map size={22} />, path: "/admin/live-traffic" },
+    { title: "Prediction", icon: <BrainCircuit size={22} />, path: "/admin/prediction" },
+    { title: "Alerts", icon: <TriangleAlert size={22} />, path: "/admin/alerts" },
+    { title: "Analytics", icon: <BarChart3 size={22} />, path: "/admin/analytics" },
+    { title: "Reports", icon: <FileText size={22} />, path: "/admin/reports" }
+];
+
+export default function Sidebar({
+    menuItems = adminMenuItems,
+    profile = { initial: "A", name: "Admin", role: "Super Administrator" }
+}) {
 
     const [collapsed, setCollapsed] = useState(false);
-
-    const menuItems = [
-
-        {
-            title: "Dashboard",
-            icon: <LayoutDashboard size={22} />,
-            path: "/admin"
-        },
-
-        {
-            title: "Live Traffic",
-            icon: <Map size={22} />,
-            path: "/admin/live-traffic"
-        },
-
-        {
-            title: "Prediction",
-            icon: <BrainCircuit size={22} />,
-            path: "/admin/prediction"
-        },
-
-        {
-            title: "Alerts",
-            icon: <TriangleAlert size={22} />,
-            path: "/admin/alerts"
-        },
-
-        {
-            title: "Analytics",
-            icon: <BarChart3 size={22} />,
-            path: "/admin/analytics"
-        },
-
-        {
-            title: "Reports",
-            icon: <FileText size={22} />,
-            path: "/admin/reports"
-        },
-
-        {
-            title: "Settings",
-            icon: <Settings size={22} />,
-            path: "/admin/settings"
-        }
-
-    ];
 
     return (
 
@@ -183,7 +148,7 @@ export default function Sidebar() {
 
                             className={({isActive})=>
 
-                                isActive
+                                isActive && !item.path.includes("#")
 
                                 ?
 
@@ -243,7 +208,7 @@ export default function Sidebar() {
 
                     <div className="avatar">
 
-                        A
+                        {profile.initial}
 
                     </div>
 
@@ -255,13 +220,13 @@ export default function Sidebar() {
 
                             <h4>
 
-                                Admin
+                                {profile.name}
 
                             </h4>
 
                             <p>
 
-                                Super Administrator
+                                {profile.role}
 
                             </p>
 

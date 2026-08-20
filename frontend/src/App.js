@@ -7,20 +7,16 @@ import OperatorDashboard from "./pages/OperatorDashboard";
 import CommuterDashboard from "./pages/CommuterDashboard";
 import Prediction from "./pages/Prediction";
 import LiveMap from "./pages/LiveMap";
-
-
+import Alerts from "./pages/Alerts";
+import Profile from "./pages/Profile";
 
 function App() {
-
   return (
-
     <Routes>
-
       <Route
         path="/"
         element={<Login />}
       />
-
 
       <Route
         path="/register"
@@ -54,7 +50,6 @@ function App() {
         }
       />
 
-      
       <Route
         path="/prediction"
         element={
@@ -73,10 +68,62 @@ function App() {
         }
       />
 
+      <Route
+        path="/admin/live-traffic"
+        element={
+          <ProtectedRoute role="admin">
+            <LiveMap />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/admin/prediction"
+        element={
+          <ProtectedRoute role="admin">
+            <Prediction />
+          </ProtectedRoute>
+        }
+      />
+
+
+      <Route
+        path="/admin/alerts"
+        element={
+          <ProtectedRoute role="admin">
+            <Alerts />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/operator/alerts"
+        element={
+          <ProtectedRoute role="operator">
+            <Alerts />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/alerts"
+        element={
+          <ProtectedRoute>
+            <Alerts />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/profile"
+        element={
+          <ProtectedRoute>
+            <Profile />
+          </ProtectedRoute>
+        }
+      />
     </Routes>
-
   );
-
 }
 
 export default App;
