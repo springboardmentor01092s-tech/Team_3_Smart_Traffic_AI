@@ -184,12 +184,8 @@ export default function LiveMap() {
           <GlassCard className="map-glass-card">
             {loading && <p className="loading-text">Loading live traffic map...</p>}
             {error && <p className="live-map-error">{error}</p>}
-            {!loading && !error && liveData.length === 0 && (
-              <p className="no-data-text">No traffic data has been ingested yet.</p>
-            )}
-            {!loading && liveData.length > 0 && (
-              <TrafficMap liveData={filteredData} />
-            )}
+            {/* Map always renders regardless of backend data availability */}
+            <TrafficMap liveData={filteredData} />
           </GlassCard>
         </div>
 

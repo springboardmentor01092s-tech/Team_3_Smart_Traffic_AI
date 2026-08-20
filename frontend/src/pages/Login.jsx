@@ -1,5 +1,5 @@
 import Swal from "sweetalert2";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Background from "../components/Background";
 import "../styles/login.css";
@@ -8,6 +8,14 @@ import api from "../services/api";
 export default function Login() {
 
     const navigate = useNavigate();
+
+    // Clear any stale session on login page load
+    useEffect(() => {
+        localStorage.removeItem("token");
+        localStorage.removeItem("role");
+        localStorage.removeItem("username");
+        localStorage.removeItem("email");
+    }, []);
 
     const [form, setForm] = useState({
         email: "",
@@ -72,12 +80,24 @@ export default function Login() {
 
         catch (err) {
 
+            console.error("Login error:", err);
+
+            // Determine a helpful error message
+            let errorMsg;
+            if (err.response) {
+                // Server replied with an error status
+                errorMsg = err.response.data?.detail || "Invalid email or password.";
+            } else if (err.request) {
+                // Request was made but no response received (network/CORS issue)
+                errorMsg = "Cannot reach the server. Make sure the backend is running on port 8000.";
+            } else {
+                errorMsg = err.message || "An unexpected error occurred.";
+            }
+
             Swal.fire({
                 icon: "error",
                 title: "Login Failed",
-                text:
-                    err.response?.data?.detail ||
-                    "Invalid Email or Password",
+                text: errorMsg,
                 background: "#101722",
                 color: "#ffffff",
                 confirmButtonColor: "#EF4444"
