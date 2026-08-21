@@ -18,8 +18,8 @@ Base.metadata.create_all(bind=engine)
 
 USERS = [
     {
-        "username": "Vikas",
-        "email": "vikas@gmail.com",
+        "username": "Sri",
+        "email": "Srilekha@gmail.com",
         "password": "123456",
         "role": "admin",
     },
@@ -30,8 +30,8 @@ USERS = [
         "role": "operator",
     },
     {
-        "username": "User",
-        "email": "user@gmail.com",
+        "username": "Chandini",
+        "email": "chandini@gmail.com",
         "password": "123456",
         "role": "commuter",
     },
