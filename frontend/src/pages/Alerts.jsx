@@ -21,8 +21,8 @@ import OperatorSidebar from "../components/OperatorSidebar";
 import { NavLink } from "react-router-dom";
 import { motion } from "framer-motion";
 import UserMenu from "../components/UserMenu";
-import api from "../services/api";
 
+import api from "../services/api";
 import "../styles/alerts.css";
 
 // ============================================================
@@ -34,7 +34,7 @@ const OPERATOR_CATEGORIES = ["traffic", "operational", "system"];
 const COMMUTER_CATEGORIES = ["traffic"];
 
 // ============================================================
-// BACKEND → FRONTEND ALERT CONVERSION
+// BACKEND ALERT -> FRONTEND ALERT
 // ============================================================
 
 function transformAlert(alert) {
@@ -53,35 +53,46 @@ function transformAlert(alert) {
 
   return {
     id: alert.id,
+
     type: alert.alert_type,
-    severity: severityMap[alert.severity] || "medium",
+
+    severity:
+      severityMap[alert.severity] || "medium",
+
+    backendSeverity: alert.severity,
 
     road: alert.location,
+
     camera: null,
     speed: null,
     volume: null,
 
     message: alert.description,
 
-    status: statusMap[alert.status] || "active",
+    status:
+      statusMap[alert.status] || "active",
 
-    time: new Date(alert.created_at).toLocaleTimeString([], {
+    backendStatus: alert.status,
+
+    time: new Date(
+      alert.created_at
+    ).toLocaleTimeString([], {
       hour: "2-digit",
       minute: "2-digit",
     }),
 
     category: "traffic",
 
-    // Original backend values
-    backendSeverity: alert.severity,
-    backendStatus: alert.status,
-
     latitude: alert.latitude,
     longitude: alert.longitude,
+
     reportedBy: alert.reported_by,
 
-    acknowledgedAt: alert.acknowledged_at,
-    resolvedAt: alert.resolved_at,
+    acknowledgedAt:
+      alert.acknowledged_at,
+
+    resolvedAt:
+      alert.resolved_at,
   };
 }
 
@@ -97,20 +108,43 @@ function badgeClass(sev) {
   return `badge-${sev}`;
 }
 
-function SeverityIcon({ sev, size = 16 }) {
+function SeverityIcon({
+  sev,
+  size = 16,
+}) {
   if (sev === "high") {
-    return <AlertCircle size={size} color="#f87171" />;
+    return (
+      <AlertCircle
+        size={size}
+        color="#f87171"
+      />
+    );
   }
 
   if (sev === "medium") {
-    return <AlertTriangle size={size} color="#fbbf24" />;
+    return (
+      <AlertTriangle
+        size={size}
+        color="#fbbf24"
+      />
+    );
   }
 
   if (sev === "low") {
-    return <CheckCircle size={size} color="#4ade80" />;
+    return (
+      <CheckCircle
+        size={size}
+        color="#4ade80"
+      />
+    );
   }
 
-  return <Info size={size} color="#95a9c8" />;
+  return (
+    <Info
+      size={size}
+      color="#95a9c8"
+    />
+  );
 }
 
 function StatusPill({ status }) {
@@ -134,14 +168,16 @@ function StatusPill({ status }) {
   const s = map[status] || map.active;
 
   return (
-    <span className={`alert-status-pill ${s.cls}`}>
+    <span
+      className={`alert-status-pill ${s.cls}`}
+    >
       {s.label}
     </span>
   );
 }
 
 // ============================================================
-// DETAIL MODAL
+// ALERT DETAILS MODAL
 // ============================================================
 
 function AlertModal({
@@ -154,79 +190,70 @@ function AlertModal({
 }) {
   if (!alert) return null;
 
+  const canManage =
+    role === "admin" ||
+    role === "operator";
+
   return (
-    <div className="alert-modal-overlay" onClick={onClose}>
+    <div
+      className="alert-modal-overlay"
+      onClick={onClose}
+    >
       <div
         className="alert-modal"
-        onClick={(e) => e.stopPropagation()}
+        onClick={(e) =>
+          e.stopPropagation()
+        }
       >
         <h2>Alert Details</h2>
 
         <div className="alert-modal-row">
-          <span className="modal-label">Type</span>
+          <span className="modal-label">
+            Type
+          </span>
+
           <span className="modal-value">
             {alert.type}
           </span>
         </div>
 
         <div className="alert-modal-row">
-          <span className="modal-label">Severity</span>
-          <span
-            className="modal-value"
-            style={{ textTransform: "capitalize" }}
-          >
-            {alert.backendSeverity || alert.severity}
+          <span className="modal-label">
+            Severity
+          </span>
+
+          <span className="modal-value">
+            {alert.backendSeverity ||
+              alert.severity}
           </span>
         </div>
 
         <div className="alert-modal-row">
-          <span className="modal-label">Location</span>
+          <span className="modal-label">
+            Location
+          </span>
+
           <span className="modal-value">
             {alert.road}
           </span>
         </div>
 
-        {alert.camera && (
-          <div className="alert-modal-row">
-            <span className="modal-label">Camera</span>
-            <span className="modal-value">
-              {alert.camera}
-            </span>
-          </div>
-        )}
-
-        {alert.speed != null && (
-          <div className="alert-modal-row">
-            <span className="modal-label">Speed</span>
-            <span className="modal-value">
-              {alert.speed} km/h
-            </span>
-          </div>
-        )}
-
-        {alert.volume != null && (
-          <div className="alert-modal-row">
-            <span className="modal-label">
-              Traffic Volume
-            </span>
-            <span className="modal-value">
-              {alert.volume} vehicles
-            </span>
-          </div>
-        )}
-
         <div className="alert-modal-row">
-          <span className="modal-label">Status</span>
-          <span
-            className="modal-value"
-            style={{ textTransform: "capitalize" }}
-          >
-            {alert.backendStatus || alert.status}
+          <span className="modal-label">
+            Status
+          </span>
+
+          <span className="modal-value">
+            {alert.backendStatus ||
+              alert.status}
           </span>
         </div>
 
         <div className="alert-modal-row">
-          <span className="modal-label">Reported</span>
+          <span className="modal-label">
+            Reported
+          </span>
+
           <span className="modal-value">
             {alert.time}
           </span>
@@ -238,19 +265,33 @@ function AlertModal({
               <span className="modal-label">
                 Coordinates
               </span>
+
               <span className="modal-value">
-                {alert.latitude}, {alert.longitude}
+                {alert.latitude},{" "}
+                {alert.longitude}
               </span>
             </div>
           )}
+
+        <div className="alert-modal-row">
+          <span className="modal-label">
+            Reported By
+          </span>
+
+          <span className="modal-value">
+            User #{alert.reportedBy}
+          </span>
+        </div>
 
         <div className="alert-modal-desc">
           {alert.message}
         </div>
 
         <div className="alert-modal-actions">
-          {(role === "admin" || role === "operator") &&
-            alert.status === "active" && (
+
+          {canManage &&
+            alert.status ===
+              "active" && (
               <button
                 className="btn-alert btn-alert-ack"
                 onClick={() => {
@@ -258,12 +299,14 @@ function AlertModal({
                   onClose();
                 }}
               >
+                <UserCheck size={13} />
                 Acknowledge
               </button>
             )}
 
-          {(role === "admin" || role === "operator") &&
-            alert.status !== "resolved" && (
+          {canManage &&
+            alert.status !==
+              "resolved" && (
               <button
                 className="btn-alert btn-alert-resolve"
                 onClick={() => {
@@ -271,6 +314,7 @@ function AlertModal({
                   onClose();
                 }}
               >
+                <CheckCheck size={13} />
                 Resolve
               </button>
             )}
@@ -283,6 +327,7 @@ function AlertModal({
                 onClose();
               }}
             >
+              <BellOff size={13} />
               Dismiss
             </button>
           )}
@@ -301,6 +346,7 @@ function AlertModal({
 
 // ============================================================
 // REPORT EMERGENCY MODAL
+// ALL ROLES CAN USE THIS
 // ============================================================
 
 function ReportEmergencyModal({
@@ -317,11 +363,14 @@ function ReportEmergencyModal({
     >
       <div
         className="alert-modal"
-        onClick={(e) => e.stopPropagation()}
+        onClick={(e) =>
+          e.stopPropagation()
+        }
       >
         <h2>Report Emergency</h2>
 
         <form onSubmit={onSubmit}>
+
           {/* ALERT TYPE */}
 
           <div className="alert-modal-row">
@@ -335,7 +384,8 @@ function ReportEmergencyModal({
               onChange={(e) =>
                 setForm({
                   ...form,
-                  alert_type: e.target.value,
+                  alert_type:
+                    e.target.value,
                 })
               }
             >
@@ -374,7 +424,8 @@ function ReportEmergencyModal({
               onChange={(e) =>
                 setForm({
                   ...form,
-                  severity: e.target.value,
+                  severity:
+                    e.target.value,
                 })
               }
             >
@@ -411,7 +462,8 @@ function ReportEmergencyModal({
               onChange={(e) =>
                 setForm({
                   ...form,
-                  location: e.target.value,
+                  location:
+                    e.target.value,
                 })
               }
             />
@@ -432,15 +484,17 @@ function ReportEmergencyModal({
               onChange={(e) =>
                 setForm({
                   ...form,
-                  description: e.target.value,
+                  description:
+                    e.target.value,
                 })
               }
             />
           </div>
 
-          {/* BUTTONS */}
+          {/* ACTIONS */}
 
           <div className="alert-modal-actions">
+
             <button
               type="button"
               className="btn-modal-close"
@@ -459,6 +513,7 @@ function ReportEmergencyModal({
                 ? "Reporting..."
                 : "Report Emergency"}
             </button>
+
           </div>
         </form>
       </div>
@@ -467,34 +522,44 @@ function ReportEmergencyModal({
 }
 
 // ============================================================
-// SHARED ALERTS CONTENT
+// ALERTS CONTENT
 // ============================================================
 
 function AlertsContent({ role }) {
-  const isAdmin = role === "admin";
-  const isOperator = role === "operator";
-  const isCommuter = role === "commuter";
+  const isAdmin =
+    role === "admin";
 
-  const visibleCategories = isAdmin
-    ? ADMIN_CATEGORIES
-    : isOperator
-    ? OPERATOR_CATEGORIES
-    : COMMUTER_CATEGORIES;
+  const isOperator =
+    role === "operator";
+
+  const isCommuter =
+    role === "commuter";
+
+  const visibleCategories =
+    isAdmin
+      ? ADMIN_CATEGORIES
+      : isOperator
+      ? OPERATOR_CATEGORIES
+      : COMMUTER_CATEGORIES;
 
   // ============================================================
   // STATE
   // ============================================================
 
-  const [alerts, setAlerts] = useState([]);
+  const [alerts, setAlerts] =
+    useState([]);
 
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] =
+    useState(true);
 
-  const [error, setError] = useState("");
+  const [error, setError] =
+    useState("");
 
   const [selectedAlert, setSelectedAlert] =
     useState(null);
 
-  const [dismissed, setDismissed] = useState([]);
+  const [dismissed, setDismissed] =
+    useState([]);
 
   const [showReportModal, setShowReportModal] =
     useState(false);
@@ -502,17 +567,18 @@ function AlertsContent({ role }) {
   const [reporting, setReporting] =
     useState(false);
 
-  const [reportForm, setReportForm] = useState({
-    alert_type: "Accident",
-    description: "",
-    location: "",
-    latitude: null,
-    longitude: null,
-    severity: "High",
-  });
+  const [reportForm, setReportForm] =
+    useState({
+      alert_type: "Accident",
+      description: "",
+      location: "",
+      latitude: null,
+      longitude: null,
+      severity: "High",
+    });
 
   // ============================================================
-  // FILTER STATE
+  // FILTERS
   // ============================================================
 
   const [filterType, setFilterType] =
@@ -543,24 +609,33 @@ function AlertsContent({ role }) {
       setLoading(true);
       setError("");
 
-      const response = await api.get("/alerts/");
+      const response =
+        await api.get("/alerts/");
 
       const formattedAlerts =
-        response.data.map(transformAlert);
+        response.data.map(
+          transformAlert
+        );
 
-      setAlerts(formattedAlerts);
+      setAlerts(
+        formattedAlerts
+      );
     } catch (err) {
       console.error(
         "Failed to fetch alerts:",
         err
       );
 
-      if (err.response?.status === 401) {
+      if (
+        err.response?.status === 401
+      ) {
         setError(
           "Your session has expired. Please login again."
         );
       } else {
-        setError("Failed to load alerts.");
+        setError(
+          "Failed to load alerts."
+        );
       }
     } finally {
       setLoading(false);
@@ -568,160 +643,202 @@ function AlertsContent({ role }) {
   };
 
   // ============================================================
-  // CREATE EMERGENCY ALERT
+  // CREATE ALERT
+  // ALL ROLES CAN CREATE
   // ============================================================
 
-  const reportEmergency = async (e) => {
-    e.preventDefault();
+  const reportEmergency =
+    async (e) => {
+      e.preventDefault();
 
-    if (!reportForm.description.trim()) {
-      alert("Please describe the emergency.");
-      return;
-    }
+      if (
+        !reportForm.description.trim()
+      ) {
+        alert(
+          "Please describe the emergency."
+        );
+        return;
+      }
 
-    if (!reportForm.location.trim()) {
-      alert("Please enter the location.");
-      return;
-    }
+      if (
+        !reportForm.location.trim()
+      ) {
+        alert(
+          "Please enter the location."
+        );
+        return;
+      }
 
-    try {
-      setReporting(true);
+      try {
+        setReporting(true);
 
-      const response = await api.post(
-        "/alerts/",
-        {
-          alert_type: reportForm.alert_type,
-          description: reportForm.description,
-          location: reportForm.location,
-          latitude: reportForm.latitude,
-          longitude: reportForm.longitude,
-          severity: reportForm.severity,
+        const response =
+          await api.post(
+            "/alerts/",
+            {
+              alert_type:
+                reportForm.alert_type,
+
+              description:
+                reportForm.description,
+
+              location:
+                reportForm.location,
+
+              latitude:
+                reportForm.latitude,
+
+              longitude:
+                reportForm.longitude,
+
+              severity:
+                reportForm.severity,
+            }
+          );
+
+        const newAlert =
+          transformAlert(
+            response.data
+          );
+
+        setAlerts((prev) => [
+          newAlert,
+          ...prev,
+        ]);
+
+        setShowReportModal(
+          false
+        );
+
+        setReportForm({
+          alert_type: "Accident",
+          description: "",
+          location: "",
+          latitude: null,
+          longitude: null,
+          severity: "High",
+        });
+
+        alert(
+          "Emergency reported successfully."
+        );
+      } catch (err) {
+        console.error(
+          "Failed to report emergency:",
+          err
+        );
+
+        if (
+          err.response?.status === 401
+        ) {
+          alert(
+            "Please login again."
+          );
+        } else {
+          alert(
+            "Failed to report emergency."
+          );
         }
-      );
-
-      const newAlert =
-        transformAlert(response.data);
-
-      setAlerts((prev) => [
-        newAlert,
-        ...prev,
-      ]);
-
-      setShowReportModal(false);
-
-      setReportForm({
-        alert_type: "Accident",
-        description: "",
-        location: "",
-        latitude: null,
-        longitude: null,
-        severity: "High",
-      });
-
-      alert(
-        "Emergency reported successfully."
-      );
-    } catch (err) {
-      console.error(
-        "Failed to report emergency:",
-        err
-      );
-
-      if (err.response?.status === 401) {
-        alert(
-          "Please login again."
-        );
-      } else {
-        alert(
-          "Failed to report emergency."
-        );
+      } finally {
+        setReporting(false);
       }
-    } finally {
-      setReporting(false);
-    }
-  };
+    };
 
   // ============================================================
-  // ACKNOWLEDGE ALERT
+  // ACKNOWLEDGE
+  // ADMIN + OPERATOR ONLY
   // ============================================================
 
-  const acknowledge = async (id) => {
-    try {
-      await api.patch(
-        `/alerts/${id}/acknowledge`
-      );
-
-      setAlerts((prev) =>
-        prev.map((alert) =>
-          alert.id === id
-            ? {
-                ...alert,
-                status: "acknowledged",
-                backendStatus:
-                  "Acknowledged",
-              }
-            : alert
-        )
-      );
-    } catch (err) {
-      console.error(
-        "Failed to acknowledge alert:",
-        err
-      );
-
-      if (err.response?.status === 403) {
-        alert(
-          "You don't have permission to acknowledge this alert."
+  const acknowledge =
+    async (id) => {
+      try {
+        await api.patch(
+          `/alerts/${id}/acknowledge`
         );
-      } else {
-        alert(
-          "Failed to acknowledge alert."
+
+        setAlerts((prev) =>
+          prev.map((alert) =>
+            alert.id === id
+              ? {
+                  ...alert,
+                  status:
+                    "acknowledged",
+                  backendStatus:
+                    "Acknowledged",
+                }
+              : alert
+          )
         );
+      } catch (err) {
+        console.error(
+          "Failed to acknowledge alert:",
+          err
+        );
+
+        if (
+          err.response?.status ===
+          403
+        ) {
+          alert(
+            "You don't have permission to acknowledge this alert."
+          );
+        } else {
+          alert(
+            "Failed to acknowledge alert."
+          );
+        }
       }
-    }
-  };
+    };
 
   // ============================================================
-  // RESOLVE ALERT
+  // RESOLVE
+  // ADMIN + OPERATOR ONLY
   // ============================================================
 
-  const resolve = async (id) => {
-    try {
-      await api.patch(
-        `/alerts/${id}/resolve`
-      );
-
-      setAlerts((prev) =>
-        prev.map((alert) =>
-          alert.id === id
-            ? {
-                ...alert,
-                status: "resolved",
-                backendStatus: "Resolved",
-              }
-            : alert
-        )
-      );
-    } catch (err) {
-      console.error(
-        "Failed to resolve alert:",
-        err
-      );
-
-      if (err.response?.status === 403) {
-        alert(
-          "You don't have permission to resolve this alert."
+  const resolve =
+    async (id) => {
+      try {
+        await api.patch(
+          `/alerts/${id}/resolve`
         );
-      } else {
-        alert(
-          "Failed to resolve alert."
+
+        setAlerts((prev) =>
+          prev.map((alert) =>
+            alert.id === id
+              ? {
+                  ...alert,
+                  status:
+                    "resolved",
+                  backendStatus:
+                    "Resolved",
+                }
+              : alert
+          )
         );
+      } catch (err) {
+        console.error(
+          "Failed to resolve alert:",
+          err
+        );
+
+        if (
+          err.response?.status ===
+          403
+        ) {
+          alert(
+            "You don't have permission to resolve this alert."
+          );
+        } else {
+          alert(
+            "Failed to resolve alert."
+          );
+        }
       }
-    }
-  };
+    };
 
   // ============================================================
-  // COMMUTER DISMISS
+  // DISMISS
+  // COMMUTER UI ONLY
   // ============================================================
 
   const dismiss = (id) => {
@@ -735,20 +852,24 @@ function AlertsContent({ role }) {
   // ROLE FILTER
   // ============================================================
 
-  const roleFiltered = alerts.filter(
-    (a) =>
-      visibleCategories.includes(
-        a.category
-      ) &&
-      !dismissed.includes(a.id)
-  );
+  const roleFiltered =
+    alerts.filter(
+      (a) =>
+        visibleCategories.includes(
+          a.category
+        ) &&
+        !dismissed.includes(
+          a.id
+        )
+    );
 
   // ============================================================
-  // APPLY FILTERS
+  // FILTERS
   // ============================================================
 
-  const displayed = roleFiltered.filter(
-    (a) => {
+  const displayed =
+    roleFiltered.filter((a) => {
+
       if (isCommuter) {
         if (
           pillFilter !== "All" &&
@@ -788,46 +909,55 @@ function AlertsContent({ role }) {
       }
 
       return true;
-    }
-  );
+    });
 
   // ============================================================
-  // SUMMARY COUNTERS
+  // COUNTERS
   // ============================================================
 
-  const critical = roleFiltered.filter(
-    (a) =>
-      a.severity === "high" &&
-      a.status !== "resolved"
-  ).length;
+  const critical =
+    roleFiltered.filter(
+      (a) =>
+        a.severity === "high" &&
+        a.status !== "resolved"
+    ).length;
 
-  const warnings = roleFiltered.filter(
-    (a) =>
-      a.severity === "medium" &&
-      a.status !== "resolved"
-  ).length;
+  const warnings =
+    roleFiltered.filter(
+      (a) =>
+        a.severity === "medium" &&
+        a.status !== "resolved"
+    ).length;
 
-  const active = roleFiltered.filter(
-    (a) => a.status !== "resolved"
-  ).length;
+  const active =
+    roleFiltered.filter(
+      (a) =>
+        a.status !== "resolved"
+    ).length;
 
-  const resolved = roleFiltered.filter(
-    (a) => a.status === "resolved"
-  ).length;
+  const resolved =
+    roleFiltered.filter(
+      (a) =>
+        a.status === "resolved"
+    ).length;
 
   // ============================================================
-  // FILTER VALUES
+  // FILTER OPTIONS
   // ============================================================
 
   const allTypes = [
     ...new Set(
-      roleFiltered.map((a) => a.type)
+      roleFiltered.map(
+        (a) => a.type
+      )
     ),
   ];
 
   const allRoads = [
     ...new Set(
-      roleFiltered.map((a) => a.road)
+      roleFiltered.map(
+        (a) => a.road
+      )
     ),
   ];
 
@@ -843,27 +973,38 @@ function AlertsContent({ role }) {
       ====================================================== */}
 
       <div className="alerts-page-header">
-        <h1>TRAFFIC ALERTS</h1>
 
-        <p>
-          {isCommuter
-            ? "Important traffic conditions that may affect your journey."
-            : "Real-time traffic incidents and system alerts."}
-        </p>
+        <div>
+          <h1>
+            TRAFFIC ALERTS
+          </h1>
 
-        {/* REPORT EMERGENCY BUTTON */}
+          <p>
+            {isCommuter
+              ? "Important traffic conditions that may affect your journey."
+              : "Real-time traffic incidents and system alerts."}
+          </p>
+        </div>
 
-        {isCommuter && (
-          <button
-            className="btn-report-emergency"
-            onClick={() =>
-              setShowReportModal(true)
-            }
-          >
-            <AlertTriangle size={16} />
-            Report Emergency
-          </button>
-        )}
+        {/* ====================================================
+            ALL ROLES CAN REPORT
+            ==================================================== */}
+
+        <button
+          className="btn-report-emergency"
+          onClick={() =>
+            setShowReportModal(
+              true
+            )
+          }
+        >
+          <AlertTriangle
+            size={16}
+          />
+
+          Report Emergency
+        </button>
+
       </div>
 
       {/* ======================================================
@@ -873,6 +1014,7 @@ function AlertsContent({ role }) {
       <div className="alerts-summary-row">
 
         <div className="alert-summary-card">
+
           <div className="alert-summary-icon critical">
             <AlertCircle
               size={20}
@@ -889,9 +1031,11 @@ function AlertsContent({ role }) {
               Critical
             </div>
           </div>
+
         </div>
 
         <div className="alert-summary-card">
+
           <div className="alert-summary-icon warning">
             <AlertTriangle
               size={20}
@@ -908,9 +1052,11 @@ function AlertsContent({ role }) {
               Warnings
             </div>
           </div>
+
         </div>
 
         <div className="alert-summary-card">
+
           <div className="alert-summary-icon active">
             <Activity
               size={20}
@@ -927,9 +1073,11 @@ function AlertsContent({ role }) {
               Active
             </div>
           </div>
+
         </div>
 
         <div className="alert-summary-card">
+
           <div className="alert-summary-icon resolved">
             <CheckCircle
               size={20}
@@ -946,12 +1094,13 @@ function AlertsContent({ role }) {
               Resolved
             </div>
           </div>
+
         </div>
 
       </div>
 
       {/* ======================================================
-          FILTERS
+          FILTER BAR
       ====================================================== */}
 
       <div className="alerts-filter-bar">
@@ -973,7 +1122,9 @@ function AlertsContent({ role }) {
                     : ""
                 }`}
                 onClick={() =>
-                  setPillFilter(p)
+                  setPillFilter(
+                    p
+                  )
                 }
               >
                 {p}
@@ -1001,14 +1152,16 @@ function AlertsContent({ role }) {
                 All Types
               </option>
 
-              {allTypes.map((t) => (
-                <option
-                  key={t}
-                  value={t}
-                >
-                  {t}
-                </option>
-              ))}
+              {allTypes.map(
+                (type) => (
+                  <option
+                    key={type}
+                    value={type}
+                  >
+                    {type}
+                  </option>
+                )
+              )}
             </select>
 
             <select
@@ -1024,14 +1177,16 @@ function AlertsContent({ role }) {
                 All Roads
               </option>
 
-              {allRoads.map((r) => (
-                <option
-                  key={r}
-                  value={r}
-                >
-                  {r}
-                </option>
-              ))}
+              {allRoads.map(
+                (road) => (
+                  <option
+                    key={road}
+                    value={road}
+                  >
+                    {road}
+                  </option>
+                )
+              )}
             </select>
 
             <select
@@ -1099,8 +1254,9 @@ function AlertsContent({ role }) {
         <div className="alerts-section-title">
           {filterStat === "resolved"
             ? "Resolved Alerts"
-            : "Active Alerts"}{" "}
-          — {displayed.length} showing
+            : "Alerts"}{" "}
+          — {displayed.length}{" "}
+          showing
         </div>
 
         {loading && (
@@ -1119,224 +1275,258 @@ function AlertsContent({ role }) {
           !error && (
             <div className="alerts-list">
 
-              {displayed.length === 0 && (
+              {displayed.length ===
+                0 && (
                 <div className="no-alerts-msg">
                   No alerts match the
                   selected filters.
                 </div>
               )}
 
-              {displayed.map((alert) => {
+              {displayed.map(
+                (alert) => {
 
-                const cardSev =
-                  alert.status ===
-                  "resolved"
-                    ? "sev-resolved"
-                    : sevClass(
-                        alert.severity
-                      );
+                  const cardSev =
+                    alert.status ===
+                    "resolved"
+                      ? "sev-resolved"
+                      : sevClass(
+                          alert.severity
+                        );
 
-                return (
-                  <div
-                    key={alert.id}
-                    className={`alert-card ${cardSev} ${
-                      alert.status ===
-                      "resolved"
-                        ? "resolved"
-                        : ""
-                    }`}
-                  >
+                  return (
+                    <div
+                      key={alert.id}
+                      className={`alert-card ${cardSev} ${
+                        alert.status ===
+                        "resolved"
+                          ? "resolved"
+                          : ""
+                      }`}
+                    >
 
-                    {/* TOP ROW */}
+                      {/* TOP */}
 
-                    <div className="alert-card-top">
+                      <div className="alert-card-top">
 
-                      <span
-                        className={`alert-type-badge ${badgeClass(
-                          alert.status ===
-                            "resolved"
-                            ? "resolved"
-                            : alert.severity
-                        )}`}
-                      >
-                        <SeverityIcon
-                          sev={
+                        <span
+                          className={`alert-type-badge ${badgeClass(
                             alert.status ===
-                            "resolved"
-                              ? "low"
+                              "resolved"
+                              ? "resolved"
                               : alert.severity
-                          }
-                          size={12}
-                        />
-
-                        {alert.type}
-                      </span>
-
-                      <StatusPill
-                        status={
-                          alert.status
-                        }
-                      />
-
-                    </div>
-
-                    {/* BODY */}
-
-                    <div className="alert-card-body">
-
-                      <div className="alert-road">
-                        {alert.camera
-                          ? `${alert.camera} — ${alert.road}`
-                          : alert.road}
-                      </div>
-
-                      <div className="alert-meta">
-
-                        {alert.speed !=
-                          null && (
-                          <span>
-                            <Navigation
-                              size={12}
-                            />{" "}
-                            {alert.speed}{" "}
-                            km/h
-                          </span>
-                        )}
-
-                        {alert.volume !=
-                          null && (
-                          <span>
-                            <Zap
-                              size={12}
-                            />{" "}
-                            {alert.volume}{" "}
-                            vehicles
-                          </span>
-                        )}
-
-                        {alert.camera && (
-                          <span>
-                            <Camera
-                              size={12}
-                            />{" "}
-                            {alert.camera}
-                          </span>
-                        )}
-
-                      </div>
-
-                      <div className="alert-message">
-                        {alert.message}
-                      </div>
-
-                    </div>
-
-                    {/* FOOTER */}
-
-                    <div className="alert-card-footer">
-
-                      <span className="alert-time">
-                        <Clock
-                          size={12}
-                          style={{
-                            marginRight: 4,
-                          }}
-                        />
-
-                        {alert.time}
-                      </span>
-
-                      <div className="alert-actions">
-
-                        {/* VIEW */}
-
-                        <button
-                          className="btn-alert btn-alert-view"
-                          onClick={() =>
-                            setSelectedAlert(
-                              alert
-                            )
-                          }
+                          )}`}
                         >
-                          <Eye size={13} />
-                          View
-                        </button>
+                          <SeverityIcon
+                            sev={
+                              alert.status ===
+                              "resolved"
+                                ? "low"
+                                : alert.severity
+                            }
+                            size={12}
+                          />
 
-                        {/* ACKNOWLEDGE */}
+                          {alert.type}
+                        </span>
 
-                        {(isAdmin ||
-                          isOperator) &&
-                          alert.status ===
-                            "active" && (
-                            <button
-                              className="btn-alert btn-alert-ack"
-                              onClick={() =>
-                                acknowledge(
-                                  alert.id
-                                )
+                        <StatusPill
+                          status={
+                            alert.status
+                          }
+                        />
+
+                      </div>
+
+                      {/* BODY */}
+
+                      <div className="alert-card-body">
+
+                        <div className="alert-road">
+                          {alert.road}
+                        </div>
+
+                        <div className="alert-meta">
+
+                          {alert.speed !=
+                            null && (
+                            <span>
+                              <Navigation
+                                size={
+                                  12
+                                }
+                              />{" "}
+                              {
+                                alert.speed
+                              }{" "}
+                              km/h
+                            </span>
+                          )}
+
+                          {alert.volume !=
+                            null && (
+                            <span>
+                              <Zap
+                                size={
+                                  12
+                                }
+                              />{" "}
+                              {
+                                alert.volume
+                              }{" "}
+                              vehicles
+                            </span>
+                          )}
+
+                          {alert.camera && (
+                            <span>
+                              <Camera
+                                size={
+                                  12
+                                }
+                              />{" "}
+                              {
+                                alert.camera
                               }
-                            >
-                              <UserCheck
-                                size={13}
-                              />
-                              Acknowledge
-                            </button>
+                            </span>
                           )}
 
-                        {/* RESOLVE */}
+                        </div>
 
-                        {(isAdmin ||
-                          isOperator) &&
-                          alert.status !==
-                            "resolved" && (
-                            <button
-                              className="btn-alert btn-alert-resolve"
-                              onClick={() =>
-                                resolve(
-                                  alert.id
-                                )
-                              }
-                            >
-                              <CheckCheck
-                                size={13}
-                              />
-                              Resolve
-                            </button>
-                          )}
+                        <div className="alert-message">
+                          {
+                            alert.message
+                          }
+                        </div>
 
-                        {/* ADMIN ASSIGN */}
+                      </div>
 
-                        {isAdmin &&
-                          alert.status ===
-                            "active" && (
-                            <button className="btn-alert btn-alert-assign">
-                              Assign
-                            </button>
-                          )}
+                      {/* FOOTER */}
 
-                        {/* COMMUTER DISMISS */}
+                      <div className="alert-card-footer">
 
-                        {isCommuter && (
+                        <span className="alert-time">
+                          <Clock
+                            size={
+                              12
+                            }
+                            style={{
+                              marginRight: 4,
+                            }}
+                          />
+
+                          {
+                            alert.time
+                          }
+                        </span>
+
+                        <div className="alert-actions">
+
+                          {/* VIEW */}
+
                           <button
-                            className="btn-alert btn-alert-dismiss"
+                            className="btn-alert btn-alert-view"
                             onClick={() =>
-                              dismiss(
-                                alert.id
+                              setSelectedAlert(
+                                alert
                               )
                             }
                           >
-                            <BellOff
-                              size={13}
+                            <Eye
+                              size={
+                                13
+                              }
                             />
-                            Dismiss
-                          </button>
-                        )}
 
+                            View
+                          </button>
+
+                          {/* ACKNOWLEDGE */}
+
+                          {(isAdmin ||
+                            isOperator) &&
+                            alert.status ===
+                              "active" && (
+                              <button
+                                className="btn-alert btn-alert-ack"
+                                onClick={() =>
+                                  acknowledge(
+                                    alert.id
+                                  )
+                                }
+                              >
+                                <UserCheck
+                                  size={
+                                    13
+                                  }
+                                />
+
+                                Acknowledge
+                              </button>
+                            )}
+
+                          {/* RESOLVE */}
+
+                          {(isAdmin ||
+                            isOperator) &&
+                            alert.status !==
+                              "resolved" && (
+                              <button
+                                className="btn-alert btn-alert-resolve"
+                                onClick={() =>
+                                  resolve(
+                                    alert.id
+                                  )
+                                }
+                              >
+                                <CheckCheck
+                                  size={
+                                    13
+                                  }
+                                />
+
+                                Resolve
+                              </button>
+                            )}
+
+                          {/* ADMIN ASSIGN */}
+
+                          {isAdmin &&
+                            alert.status ===
+                              "active" && (
+                              <button className="btn-alert btn-alert-assign">
+                                Assign
+                              </button>
+                            )}
+
+                          {/* COMMUTER DISMISS */}
+
+                          {isCommuter && (
+                            <button
+                              className="btn-alert btn-alert-dismiss"
+                              onClick={() =>
+                                dismiss(
+                                  alert.id
+                                )
+                              }
+                            >
+                              <BellOff
+                                size={
+                                  13
+                                }
+                              />
+
+                              Dismiss
+                            </button>
+                          )}
+
+                        </div>
                       </div>
+
                     </div>
-                  </div>
-                );
-              })}
+                  );
+                }
+              )}
 
             </div>
           )}
@@ -1352,7 +1542,9 @@ function AlertsContent({ role }) {
           alert={selectedAlert}
           role={role}
           onClose={() =>
-            setSelectedAlert(null)
+            setSelectedAlert(
+              null
+            )
           }
           onAck={acknowledge}
           onResolve={resolve}
@@ -1361,7 +1553,7 @@ function AlertsContent({ role }) {
       )}
 
       {/* ======================================================
-          REPORT EMERGENCY MODAL
+          CREATE ALERT MODAL
       ====================================================== */}
 
       {showReportModal && (
@@ -1370,7 +1562,9 @@ function AlertsContent({ role }) {
           setForm={setReportForm}
           onSubmit={reportEmergency}
           onClose={() =>
-            setShowReportModal(false)
+            setShowReportModal(
+              false
+            )
           }
           reporting={reporting}
         />
@@ -1386,8 +1580,9 @@ function AlertsContent({ role }) {
 
 export default function Alerts() {
   const userRole =
-    localStorage.getItem("role") ||
-    "commuter";
+    localStorage.getItem(
+      "role"
+    ) || "commuter";
 
   if (userRole === "admin") {
     return (
@@ -1410,14 +1605,18 @@ export default function Alerts() {
             minHeight: "100vh",
           }}
         >
-          <AlertsContent role="operator" />
+          <AlertsContent
+            role="operator"
+          />
         </div>
 
       </div>
     );
   }
 
-  return <CommuterAlertsWrapper />;
+  return (
+    <CommuterAlertsWrapper />
+  );
 }
 
 // ============================================================
@@ -1426,30 +1625,40 @@ export default function Alerts() {
 
 function CommuterAlertsWrapper() {
   const username =
-    localStorage.getItem("username") ||
-    "User";
+    localStorage.getItem(
+      "username"
+    ) || "User";
 
-  const [timeStr, setTimeStr] = useState(
-    () =>
-      new Date().toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit",
-      })
-  );
+  const [timeStr, setTimeStr] =
+    useState(
+      () =>
+        new Date().toLocaleTimeString(
+          [],
+          {
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit",
+          }
+        )
+    );
 
   useEffect(() => {
-    const t = setInterval(() => {
-      setTimeStr(
-        new Date().toLocaleTimeString([], {
-          hour: "2-digit",
-          minute: "2-digit",
-          second: "2-digit",
-        })
-      );
-    }, 1000);
+    const timer =
+      setInterval(() => {
+        setTimeStr(
+          new Date().toLocaleTimeString(
+            [],
+            {
+              hour: "2-digit",
+              minute: "2-digit",
+              second: "2-digit",
+            }
+          )
+        );
+      }, 1000);
 
-    return () => clearInterval(t);
+    return () =>
+      clearInterval(timer);
   }, []);
 
   return (
@@ -1470,20 +1679,24 @@ function CommuterAlertsWrapper() {
         }}
       >
         <div className="top-left">
+
           <div>
             <h1>
               AI Traffic Assistant
             </h1>
 
             <span>
-              Welcome back, {username}
+              Welcome back,{" "}
+              {username}
             </span>
           </div>
+
         </div>
 
         <div className="top-right">
           <UserMenu />
         </div>
+
       </motion.header>
 
       <nav
@@ -1517,7 +1730,9 @@ function CommuterAlertsWrapper() {
           margin: "0 auto",
         }}
       >
-        <AlertsContent role="commuter" />
+        <AlertsContent
+          role="commuter"
+        />
       </div>
 
     </div>
