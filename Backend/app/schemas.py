@@ -77,3 +77,32 @@ class PredictionOut(BaseModel):
     generated_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
+
+# =====================================================================
+# MANUAL ALERT SCHEMAS
+# =====================================================================
+
+class AlertCreate(BaseModel):
+    alert_type: str
+    description: str
+    location: str
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+    severity: str = "Medium"
+
+
+class AlertResponse(BaseModel):
+    id: int
+    alert_type: str
+    description: str
+    location: str
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+    severity: str
+    status: str
+    reported_by: int
+    created_at: datetime
+    acknowledged_at: Optional[datetime] = None
+    resolved_at: Optional[datetime] = None
+
+    model_config = ConfigDict(from_attributes=True)

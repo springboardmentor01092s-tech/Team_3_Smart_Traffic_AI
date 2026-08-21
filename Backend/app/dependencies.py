@@ -8,7 +8,7 @@ from .database import SessionLocal
 from .auth_handler import verify_access_token
 from . import models
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/token")
 
 
 def get_db() -> Generator[Session, None, None]:
