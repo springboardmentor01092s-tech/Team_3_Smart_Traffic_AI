@@ -1,1740 +1,1315 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   AlertTriangle,
-  AlertCircle,
-  Info,
   CheckCircle,
-  Zap,
-  Camera,
-  Navigation,
-  Activity,
-  Clock,
   Eye,
-  BellOff,
-  UserCheck,
-  CheckCheck,
-  Filter,
+  MapPin,
+  Plus,
+  X,
+  Siren,
+  Clock,
 } from "lucide-react";
+import api from "../api";
 
-import Layout from "../components/admin/Layout";
-import OperatorSidebar from "../components/OperatorSidebar";
-import { NavLink } from "react-router-dom";
-import { motion } from "framer-motion";
-import UserMenu from "../components/UserMenu";
+const Alerts = () => {
+  const [alerts, setAlerts] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-import api from "../services/api";
-import "../styles/alerts.css";
+  const [showModal, setShowModal] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
-// ============================================================
-// ROLE CATEGORIES
-// ============================================================
+  const [selectedAlert, setSelectedAlert] = useState(null);
 
-const ADMIN_CATEGORIES = ["traffic", "system", "operational"];
-const OPERATOR_CATEGORIES = ["traffic", "operational", "system"];
-const COMMUTER_CATEGORIES = ["traffic"];
+  const [formData, setFormData] = useState({
+    alert_type: "Accident",
+    description: "",
+    location: "",
+    latitude: "",
+    longitude: "",
+    severity: "Medium",
+  });
 
-// ============================================================
-// BACKEND ALERT -> FRONTEND ALERT
-// ============================================================
+  // -------------------------------------------------------
+  // GET CURRENT USER ROLE
+  // -------------------------------------------------------
+  const getRole = () => {
+    const role = localStorage.getItem("role");
 
-function transformAlert(alert) {
-  const severityMap = {
-    Low: "low",
-    Medium: "medium",
-    High: "high",
-    Critical: "high",
+    if (!role) return "";
+
+    return role.toLowerCase();
   };
 
-  const statusMap = {
-    Active: "active",
-    Acknowledged: "acknowledged",
-    Resolved: "resolved",
-  };
+  const role = getRole();
 
-  return {
-    id: alert.id,
+  const canManageAlerts = role === "admin" || role === "operator";
 
-    type: alert.alert_type,
-
-    severity:
-      severityMap[alert.severity] || "medium",
-
-    backendSeverity: alert.severity,
-
-    road: alert.location,
-
-    camera: null,
-    speed: null,
-    volume: null,
-
-    message: alert.description,
-
-    status:
-      statusMap[alert.status] || "active",
-
-    backendStatus: alert.status,
-
-    time: new Date(
-      alert.created_at
-    ).toLocaleTimeString([], {
-      hour: "2-digit",
-      minute: "2-digit",
-    }),
-
-    category: "traffic",
-
-    latitude: alert.latitude,
-    longitude: alert.longitude,
-
-    reportedBy: alert.reported_by,
-
-    acknowledgedAt:
-      alert.acknowledged_at,
-
-    resolvedAt:
-      alert.resolved_at,
-  };
-}
-
-// ============================================================
-// HELPERS
-// ============================================================
-
-function sevClass(sev) {
-  return `sev-${sev}`;
-}
-
-function badgeClass(sev) {
-  return `badge-${sev}`;
-}
-
-function SeverityIcon({
-  sev,
-  size = 16,
-}) {
-  if (sev === "high") {
-    return (
-      <AlertCircle
-        size={size}
-        color="#f87171"
-      />
-    );
-  }
-
-  if (sev === "medium") {
-    return (
-      <AlertTriangle
-        size={size}
-        color="#fbbf24"
-      />
-    );
-  }
-
-  if (sev === "low") {
-    return (
-      <CheckCircle
-        size={size}
-        color="#4ade80"
-      />
-    );
-  }
-
-  return (
-    <Info
-      size={size}
-      color="#95a9c8"
-    />
-  );
-}
-
-function StatusPill({ status }) {
-  const map = {
-    active: {
-      cls: "status-active",
-      label: "Active",
-    },
-
-    acknowledged: {
-      cls: "status-acknowledged",
-      label: "Acknowledged",
-    },
-
-    resolved: {
-      cls: "status-resolved",
-      label: "Resolved",
-    },
-  };
-
-  const s = map[status] || map.active;
-
-  return (
-    <span
-      className={`alert-status-pill ${s.cls}`}
-    >
-      {s.label}
-    </span>
-  );
-}
-
-// ============================================================
-// ALERT DETAILS MODAL
-// ============================================================
-
-function AlertModal({
-  alert,
-  role,
-  onClose,
-  onAck,
-  onResolve,
-  onDismiss,
-}) {
-  if (!alert) return null;
-
-  const canManage =
-    role === "admin" ||
-    role === "operator";
-
-  return (
-    <div
-      className="alert-modal-overlay"
-      onClick={onClose}
-    >
-      <div
-        className="alert-modal"
-        onClick={(e) =>
-          e.stopPropagation()
-        }
-      >
-        <h2>Alert Details</h2>
-
-        <div className="alert-modal-row">
-          <span className="modal-label">
-            Type
-          </span>
-
-          <span className="modal-value">
-            {alert.type}
-          </span>
-        </div>
-
-        <div className="alert-modal-row">
-          <span className="modal-label">
-            Severity
-          </span>
-
-          <span className="modal-value">
-            {alert.backendSeverity ||
-              alert.severity}
-          </span>
-        </div>
-
-        <div className="alert-modal-row">
-          <span className="modal-label">
-            Location
-          </span>
-
-          <span className="modal-value">
-            {alert.road}
-          </span>
-        </div>
-
-        <div className="alert-modal-row">
-          <span className="modal-label">
-            Status
-          </span>
-
-          <span className="modal-value">
-            {alert.backendStatus ||
-              alert.status}
-          </span>
-        </div>
-
-        <div className="alert-modal-row">
-          <span className="modal-label">
-            Reported
-          </span>
-
-          <span className="modal-value">
-            {alert.time}
-          </span>
-        </div>
-
-        {alert.latitude != null &&
-          alert.longitude != null && (
-            <div className="alert-modal-row">
-              <span className="modal-label">
-                Coordinates
-              </span>
-
-              <span className="modal-value">
-                {alert.latitude},{" "}
-                {alert.longitude}
-              </span>
-            </div>
-          )}
-
-        <div className="alert-modal-row">
-          <span className="modal-label">
-            Reported By
-          </span>
-
-          <span className="modal-value">
-            User #{alert.reportedBy}
-          </span>
-        </div>
-
-        <div className="alert-modal-desc">
-          {alert.message}
-        </div>
-
-        <div className="alert-modal-actions">
-
-          {canManage &&
-            alert.status ===
-              "active" && (
-              <button
-                className="btn-alert btn-alert-ack"
-                onClick={() => {
-                  onAck(alert.id);
-                  onClose();
-                }}
-              >
-                <UserCheck size={13} />
-                Acknowledge
-              </button>
-            )}
-
-          {canManage &&
-            alert.status !==
-              "resolved" && (
-              <button
-                className="btn-alert btn-alert-resolve"
-                onClick={() => {
-                  onResolve(alert.id);
-                  onClose();
-                }}
-              >
-                <CheckCheck size={13} />
-                Resolve
-              </button>
-            )}
-
-          {role === "commuter" && (
-            <button
-              className="btn-alert btn-alert-dismiss"
-              onClick={() => {
-                onDismiss(alert.id);
-                onClose();
-              }}
-            >
-              <BellOff size={13} />
-              Dismiss
-            </button>
-          )}
-
-          <button
-            className="btn-modal-close"
-            onClick={onClose}
-          >
-            Close
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ============================================================
-// REPORT EMERGENCY MODAL
-// ALL ROLES CAN USE THIS
-// ============================================================
-
-function ReportEmergencyModal({
-  form,
-  setForm,
-  onSubmit,
-  onClose,
-  reporting,
-}) {
-  return (
-    <div
-      className="alert-modal-overlay"
-      onClick={onClose}
-    >
-      <div
-        className="alert-modal"
-        onClick={(e) =>
-          e.stopPropagation()
-        }
-      >
-        <h2>Report Emergency</h2>
-
-        <form onSubmit={onSubmit}>
-
-          {/* ALERT TYPE */}
-
-          <div className="alert-modal-row">
-            <label className="modal-label">
-              Alert Type
-            </label>
-
-            <select
-              className="filter-select"
-              value={form.alert_type}
-              onChange={(e) =>
-                setForm({
-                  ...form,
-                  alert_type:
-                    e.target.value,
-                })
-              }
-            >
-              <option value="Accident">
-                Accident
-              </option>
-
-              <option value="Fire">
-                Fire
-              </option>
-
-              <option value="Road Block">
-                Road Block
-              </option>
-
-              <option value="Medical Emergency">
-                Medical Emergency
-              </option>
-
-              <option value="Other">
-                Other
-              </option>
-            </select>
-          </div>
-
-          {/* SEVERITY */}
-
-          <div className="alert-modal-row">
-            <label className="modal-label">
-              Severity
-            </label>
-
-            <select
-              className="filter-select"
-              value={form.severity}
-              onChange={(e) =>
-                setForm({
-                  ...form,
-                  severity:
-                    e.target.value,
-                })
-              }
-            >
-              <option value="Low">
-                Low
-              </option>
-
-              <option value="Medium">
-                Medium
-              </option>
-
-              <option value="High">
-                High
-              </option>
-
-              <option value="Critical">
-                Critical
-              </option>
-            </select>
-          </div>
-
-          {/* LOCATION */}
-
-          <div className="alert-modal-row">
-            <label className="modal-label">
-              Location
-            </label>
-
-            <input
-              type="text"
-              className="filter-select"
-              placeholder="Enter location"
-              value={form.location}
-              onChange={(e) =>
-                setForm({
-                  ...form,
-                  location:
-                    e.target.value,
-                })
-              }
-            />
-          </div>
-
-          {/* DESCRIPTION */}
-
-          <div className="alert-modal-row">
-            <label className="modal-label">
-              Description
-            </label>
-
-            <textarea
-              className="alert-description-input"
-              placeholder="Describe the emergency..."
-              rows="4"
-              value={form.description}
-              onChange={(e) =>
-                setForm({
-                  ...form,
-                  description:
-                    e.target.value,
-                })
-              }
-            />
-          </div>
-
-          {/* ACTIONS */}
-
-          <div className="alert-modal-actions">
-
-            <button
-              type="button"
-              className="btn-modal-close"
-              onClick={onClose}
-              disabled={reporting}
-            >
-              Cancel
-            </button>
-
-            <button
-              type="submit"
-              className="btn-alert btn-alert-resolve"
-              disabled={reporting}
-            >
-              {reporting
-                ? "Reporting..."
-                : "Report Emergency"}
-            </button>
-
-          </div>
-        </form>
-      </div>
-    </div>
-  );
-}
-
-// ============================================================
-// ALERTS CONTENT
-// ============================================================
-
-function AlertsContent({ role }) {
-  const isAdmin =
-    role === "admin";
-
-  const isOperator =
-    role === "operator";
-
-  const isCommuter =
-    role === "commuter";
-
-  const visibleCategories =
-    isAdmin
-      ? ADMIN_CATEGORIES
-      : isOperator
-      ? OPERATOR_CATEGORIES
-      : COMMUTER_CATEGORIES;
-
-  // ============================================================
-  // STATE
-  // ============================================================
-
-  const [alerts, setAlerts] =
-    useState([]);
-
-  const [loading, setLoading] =
-    useState(true);
-
-  const [error, setError] =
-    useState("");
-
-  const [selectedAlert, setSelectedAlert] =
-    useState(null);
-
-  const [dismissed, setDismissed] =
-    useState([]);
-
-  const [showReportModal, setShowReportModal] =
-    useState(false);
-
-  const [reporting, setReporting] =
-    useState(false);
-
-  const [reportForm, setReportForm] =
-    useState({
-      alert_type: "Accident",
-      description: "",
-      location: "",
-      latitude: null,
-      longitude: null,
-      severity: "High",
-    });
-
-  // ============================================================
-  // FILTERS
-  // ============================================================
-
-  const [filterType, setFilterType] =
-    useState("All");
-
-  const [filterRoad, setFilterRoad] =
-    useState("All");
-
-  const [filterSev, setFilterSev] =
-    useState("All");
-
-  const [filterStat, setFilterStat] =
-    useState("All");
-
-  const [pillFilter, setPillFilter] =
-    useState("All");
-
-  // ============================================================
+  // -------------------------------------------------------
   // FETCH ALERTS
-  // ============================================================
-
-  useEffect(() => {
-    fetchAlerts();
-  }, []);
-
+  // -------------------------------------------------------
   const fetchAlerts = async () => {
     try {
       setLoading(true);
-      setError("");
 
-      const response =
-        await api.get("/alerts/");
+      const response = await api.get("/alerts/");
+      setAlerts(response.data || []);
+    } catch (error) {
+      console.error("Failed to fetch alerts:", error);
 
-      const formattedAlerts =
-        response.data.map(
-          transformAlert
-        );
-
-      setAlerts(
-        formattedAlerts
-      );
-    } catch (err) {
-      console.error(
-        "Failed to fetch alerts:",
-        err
-      );
-
-      if (
-        err.response?.status === 401
-      ) {
-        setError(
-          "Your session has expired. Please login again."
-        );
-      } else {
-        setError(
-          "Failed to load alerts."
-        );
+      if (error.response?.status === 401) {
+        alert("Session expired. Please login again.");
       }
     } finally {
       setLoading(false);
     }
   };
 
-  // ============================================================
-  // CREATE ALERT
-  // ALL ROLES CAN CREATE
-  // ============================================================
+  useEffect(() => {
+    fetchAlerts();
+  }, []);
 
-  const reportEmergency =
-    async (e) => {
-      e.preventDefault();
+  // -------------------------------------------------------
+  // FORM CHANGE
+  // -------------------------------------------------------
+  const handleChange = (e) => {
+    const { name, value } = e.target;
 
-      if (
-        !reportForm.description.trim()
-      ) {
-        alert(
-          "Please describe the emergency."
-        );
-        return;
-      }
-
-      if (
-        !reportForm.location.trim()
-      ) {
-        alert(
-          "Please enter the location."
-        );
-        return;
-      }
-
-      try {
-        setReporting(true);
-
-        const response =
-          await api.post(
-            "/alerts/",
-            {
-              alert_type:
-                reportForm.alert_type,
-
-              description:
-                reportForm.description,
-
-              location:
-                reportForm.location,
-
-              latitude:
-                reportForm.latitude,
-
-              longitude:
-                reportForm.longitude,
-
-              severity:
-                reportForm.severity,
-            }
-          );
-
-        const newAlert =
-          transformAlert(
-            response.data
-          );
-
-        setAlerts((prev) => [
-          newAlert,
-          ...prev,
-        ]);
-
-        setShowReportModal(
-          false
-        );
-
-        setReportForm({
-          alert_type: "Accident",
-          description: "",
-          location: "",
-          latitude: null,
-          longitude: null,
-          severity: "High",
-        });
-
-        alert(
-          "Emergency reported successfully."
-        );
-      } catch (err) {
-        console.error(
-          "Failed to report emergency:",
-          err
-        );
-
-        if (
-          err.response?.status === 401
-        ) {
-          alert(
-            "Please login again."
-          );
-        } else {
-          alert(
-            "Failed to report emergency."
-          );
-        }
-      } finally {
-        setReporting(false);
-      }
-    };
-
-  // ============================================================
-  // ACKNOWLEDGE
-  // ADMIN + OPERATOR ONLY
-  // ============================================================
-
-  const acknowledge =
-    async (id) => {
-      try {
-        await api.patch(
-          `/alerts/${id}/acknowledge`
-        );
-
-        setAlerts((prev) =>
-          prev.map((alert) =>
-            alert.id === id
-              ? {
-                  ...alert,
-                  status:
-                    "acknowledged",
-                  backendStatus:
-                    "Acknowledged",
-                }
-              : alert
-          )
-        );
-      } catch (err) {
-        console.error(
-          "Failed to acknowledge alert:",
-          err
-        );
-
-        if (
-          err.response?.status ===
-          403
-        ) {
-          alert(
-            "You don't have permission to acknowledge this alert."
-          );
-        } else {
-          alert(
-            "Failed to acknowledge alert."
-          );
-        }
-      }
-    };
-
-  // ============================================================
-  // RESOLVE
-  // ADMIN + OPERATOR ONLY
-  // ============================================================
-
-  const resolve =
-    async (id) => {
-      try {
-        await api.patch(
-          `/alerts/${id}/resolve`
-        );
-
-        setAlerts((prev) =>
-          prev.map((alert) =>
-            alert.id === id
-              ? {
-                  ...alert,
-                  status:
-                    "resolved",
-                  backendStatus:
-                    "Resolved",
-                }
-              : alert
-          )
-        );
-      } catch (err) {
-        console.error(
-          "Failed to resolve alert:",
-          err
-        );
-
-        if (
-          err.response?.status ===
-          403
-        ) {
-          alert(
-            "You don't have permission to resolve this alert."
-          );
-        } else {
-          alert(
-            "Failed to resolve alert."
-          );
-        }
-      }
-    };
-
-  // ============================================================
-  // DISMISS
-  // COMMUTER UI ONLY
-  // ============================================================
-
-  const dismiss = (id) => {
-    setDismissed((prev) => [
+    setFormData((prev) => ({
       ...prev,
-      id,
-    ]);
+      [name]: value,
+    }));
   };
 
-  // ============================================================
-  // ROLE FILTER
-  // ============================================================
+  // -------------------------------------------------------
+  // CREATE ALERT
+  // -------------------------------------------------------
+  const handleCreateAlert = async (e) => {
+    e.preventDefault();
 
-  const roleFiltered =
-    alerts.filter(
-      (a) =>
-        visibleCategories.includes(
-          a.category
-        ) &&
-        !dismissed.includes(
-          a.id
-        )
-    );
+    if (!formData.description.trim()) {
+      alert("Please enter alert description.");
+      return;
+    }
 
-  // ============================================================
-  // FILTERS
-  // ============================================================
+    if (!formData.location.trim()) {
+      alert("Please enter alert location.");
+      return;
+    }
 
-  const displayed =
-    roleFiltered.filter((a) => {
+    try {
+      setSubmitting(true);
 
-      if (isCommuter) {
-        if (
-          pillFilter !== "All" &&
-          a.severity !==
-            pillFilter.toLowerCase()
-        ) {
-          return false;
-        }
-      } else {
-        if (
-          filterType !== "All" &&
-          a.type !== filterType
-        ) {
-          return false;
-        }
+      const payload = {
+        alert_type: formData.alert_type,
+        description: formData.description,
+        location: formData.location,
+        latitude:
+          formData.latitude === ""
+            ? null
+            : Number(formData.latitude),
+        longitude:
+          formData.longitude === ""
+            ? null
+            : Number(formData.longitude),
+        severity: formData.severity,
+      };
 
-        if (
-          filterRoad !== "All" &&
-          a.road !== filterRoad
-        ) {
-          return false;
-        }
+      await api.post("/alerts/", payload);
 
-        if (
-          filterSev !== "All" &&
-          a.severity !== filterSev
-        ) {
-          return false;
-        }
+      alert("Emergency alert created successfully.");
 
-        if (
-          filterStat !== "All" &&
-          a.status !== filterStat
-        ) {
-          return false;
-        }
-      }
+      setShowModal(false);
 
-      return true;
-    });
+      setFormData({
+        alert_type: "Accident",
+        description: "",
+        location: "",
+        latitude: "",
+        longitude: "",
+        severity: "Medium",
+      });
 
-  // ============================================================
-  // COUNTERS
-  // ============================================================
+      await fetchAlerts();
+    } catch (error) {
+      console.error("Create alert error:", error);
 
-  const critical =
-    roleFiltered.filter(
-      (a) =>
-        a.severity === "high" &&
-        a.status !== "resolved"
-    ).length;
+      alert(
+        error.response?.data?.detail ||
+          "Failed to create alert."
+      );
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
-  const warnings =
-    roleFiltered.filter(
-      (a) =>
-        a.severity === "medium" &&
-        a.status !== "resolved"
-    ).length;
+  // -------------------------------------------------------
+  // ACKNOWLEDGE ALERT
+  // -------------------------------------------------------
+  const handleAcknowledge = async (alertId) => {
+    try {
+      await api.patch(`/alerts/${alertId}/acknowledge`);
 
-  const active =
-    roleFiltered.filter(
-      (a) =>
-        a.status !== "resolved"
-    ).length;
+      alert("Alert acknowledged.");
 
-  const resolved =
-    roleFiltered.filter(
-      (a) =>
-        a.status === "resolved"
-    ).length;
+      await fetchAlerts();
+    } catch (error) {
+      console.error("Acknowledge error:", error);
 
-  // ============================================================
-  // FILTER OPTIONS
-  // ============================================================
+      alert(
+        error.response?.data?.detail ||
+          "Failed to acknowledge alert."
+      );
+    }
+  };
 
-  const allTypes = [
-    ...new Set(
-      roleFiltered.map(
-        (a) => a.type
-      )
-    ),
-  ];
+  // -------------------------------------------------------
+  // RESOLVE ALERT
+  // -------------------------------------------------------
+  const handleResolve = async (alertId) => {
+    try {
+      await api.patch(`/alerts/${alertId}/resolve`);
 
-  const allRoads = [
-    ...new Set(
-      roleFiltered.map(
-        (a) => a.road
-      )
-    ),
-  ];
+      alert("Alert resolved.");
 
-  // ============================================================
-  // UI
-  // ============================================================
+      await fetchAlerts();
+    } catch (error) {
+      console.error("Resolve error:", error);
+
+      alert(
+        error.response?.data?.detail ||
+          "Failed to resolve alert."
+      );
+    }
+  };
+
+  // -------------------------------------------------------
+  // VIEW ALERT
+  // -------------------------------------------------------
+  const handleView = (alert) => {
+    setSelectedAlert(alert);
+  };
+
+  // -------------------------------------------------------
+  // STATISTICS
+  // -------------------------------------------------------
+  const criticalCount = alerts.filter(
+    (alert) =>
+      alert.severity?.toLowerCase() === "critical" &&
+      alert.status !== "Resolved"
+  ).length;
+
+  const warningCount = alerts.filter(
+    (alert) =>
+      alert.severity?.toLowerCase() === "medium" &&
+      alert.status !== "Resolved"
+  ).length;
+
+  const activeCount = alerts.filter(
+    (alert) => alert.status !== "Resolved"
+  ).length;
+
+  const resolvedCount = alerts.filter(
+    (alert) => alert.status === "Resolved"
+  ).length;
+
+  // -------------------------------------------------------
+  // STATUS CLASS
+  // -------------------------------------------------------
+  const getStatusClass = (status) => {
+    switch (status?.toLowerCase()) {
+      case "active":
+        return "status-active";
+
+      case "acknowledged":
+        return "status-acknowledged";
+
+      case "resolved":
+        return "status-resolved";
+
+      default:
+        return "";
+    }
+  };
+
+  // -------------------------------------------------------
+  // SEVERITY CLASS
+  // -------------------------------------------------------
+  const getSeverityClass = (severity) => {
+    switch (severity?.toLowerCase()) {
+      case "critical":
+        return "severity-critical";
+
+      case "high":
+        return "severity-high";
+
+      case "medium":
+        return "severity-medium";
+
+      case "low":
+        return "severity-low";
+
+      default:
+        return "severity-medium";
+    }
+  };
 
   return (
     <div className="alerts-page">
 
-      {/* ======================================================
+      {/* ===================================================
           HEADER
-      ====================================================== */}
+      =================================================== */}
 
-      <div className="alerts-page-header">
+      <div className="alerts-header">
 
         <div>
-          <h1>
-            TRAFFIC ALERTS
-          </h1>
+          <h1>TRAFFIC ALERTS</h1>
 
           <p>
-            {isCommuter
-              ? "Important traffic conditions that may affect your journey."
-              : "Real-time traffic incidents and system alerts."}
+            Real-time traffic incidents and system alerts.
           </p>
         </div>
 
-        {/* ====================================================
-            ALL ROLES CAN REPORT
-            ==================================================== */}
+        {/* RED EMERGENCY BUTTON */}
 
         <button
-          className="btn-report-emergency"
-          onClick={() =>
-            setShowReportModal(
-              true
-            )
-          }
+          className="emergency-button"
+          onClick={() => setShowModal(true)}
         >
-          <AlertTriangle
-            size={16}
-          />
-
-          Report Emergency
+          <Siren size={22} />
+          <span>Report Emergency</span>
         </button>
 
       </div>
 
-      {/* ======================================================
-          SUMMARY
-      ====================================================== */}
+      {/* ===================================================
+          STATISTICS
+      =================================================== */}
 
-      <div className="alerts-summary-row">
+      <div className="stats-grid">
 
-        <div className="alert-summary-card">
-
-          <div className="alert-summary-icon critical">
-            <AlertCircle
-              size={20}
-              color="#f87171"
-            />
+        <div className="stat-card critical-card">
+          <div className="stat-icon">
+            <AlertTriangle size={24} />
           </div>
 
-          <div className="alert-summary-info">
-            <div className="count">
-              {critical}
-            </div>
-
-            <div className="label">
-              Critical
-            </div>
+          <div>
+            <h2>{criticalCount}</h2>
+            <span>CRITICAL</span>
           </div>
-
         </div>
 
-        <div className="alert-summary-card">
-
-          <div className="alert-summary-icon warning">
-            <AlertTriangle
-              size={20}
-              color="#fbbf24"
-            />
+        <div className="stat-card warning-card">
+          <div className="stat-icon">
+            <AlertTriangle size={24} />
           </div>
 
-          <div className="alert-summary-info">
-            <div className="count">
-              {warnings}
-            </div>
-
-            <div className="label">
-              Warnings
-            </div>
+          <div>
+            <h2>{warningCount}</h2>
+            <span>WARNINGS</span>
           </div>
-
         </div>
 
-        <div className="alert-summary-card">
-
-          <div className="alert-summary-icon active">
-            <Activity
-              size={20}
-              color="#00d4ff"
-            />
+        <div className="stat-card active-card">
+          <div className="stat-icon">
+            <Clock size={24} />
           </div>
 
-          <div className="alert-summary-info">
-            <div className="count">
-              {active}
-            </div>
-
-            <div className="label">
-              Active
-            </div>
+          <div>
+            <h2>{activeCount}</h2>
+            <span>ACTIVE</span>
           </div>
-
         </div>
 
-        <div className="alert-summary-card">
-
-          <div className="alert-summary-icon resolved">
-            <CheckCircle
-              size={20}
-              color="#4ade80"
-            />
+        <div className="stat-card resolved-card">
+          <div className="stat-icon">
+            <CheckCircle size={24} />
           </div>
 
-          <div className="alert-summary-info">
-            <div className="count">
-              {resolved}
-            </div>
-
-            <div className="label">
-              Resolved
-            </div>
+          <div>
+            <h2>{resolvedCount}</h2>
+            <span>RESOLVED</span>
           </div>
-
         </div>
 
       </div>
 
-      {/* ======================================================
-          FILTER BAR
-      ====================================================== */}
+      {/* ===================================================
+          ALERT LIST
+      =================================================== */}
 
-      <div className="alerts-filter-bar">
+      <div className="alerts-section">
 
-        {isCommuter ? (
-          <div className="alerts-pill-tabs">
+        <div className="section-title">
+          ALERTS — {alerts.length} SHOWING
+        </div>
 
-            {[
-              "All",
-              "High",
-              "Medium",
-              "Low",
-            ].map((p) => (
-              <button
-                key={p}
-                className={`pill-tab ${
-                  pillFilter === p
-                    ? "active"
-                    : ""
-                }`}
-                onClick={() =>
-                  setPillFilter(
-                    p
-                  )
-                }
+        {loading ? (
+          <div className="loading">
+            Loading alerts...
+          </div>
+        ) : alerts.length === 0 ? (
+          <div className="empty-state">
+            <CheckCircle size={40} />
+            <h3>No Alerts</h3>
+            <p>No traffic alerts are currently available.</p>
+          </div>
+        ) : (
+          <div className="alerts-list">
+
+            {alerts.map((alert) => (
+
+              <div
+                key={alert.id}
+                className={`alert-card ${getSeverityClass(
+                  alert.severity
+                )}`}
               >
-                {p}
-              </button>
+
+                {/* LEFT SIDE */}
+
+                <div className="alert-main">
+
+                  <div className="alert-icon">
+                    <AlertTriangle size={25} />
+                  </div>
+
+                  <div className="alert-info">
+
+                    <div className="alert-title-row">
+
+                      <h3>
+                        {alert.alert_type}
+                      </h3>
+
+                      <span
+                        className={`severity-badge ${getSeverityClass(
+                          alert.severity
+                        )}`}
+                      >
+                        {alert.severity}
+                      </span>
+
+                      <span
+                        className={`status-badge ${getStatusClass(
+                          alert.status
+                        )}`}
+                      >
+                        {alert.status}
+                      </span>
+
+                    </div>
+
+                    <div className="location">
+                      <MapPin size={15} />
+                      {alert.location}
+                    </div>
+
+                    <p className="description">
+                      {alert.description}
+                    </p>
+
+                  </div>
+
+                </div>
+
+                {/* RIGHT SIDE */}
+
+                <div className="alert-actions">
+
+                  <div className="alert-time">
+                    {alert.created_at
+                      ? new Date(
+                          alert.created_at
+                        ).toLocaleTimeString([], {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })
+                      : ""}
+                  </div>
+
+                  <button
+                    className="view-button"
+                    onClick={() => handleView(alert)}
+                  >
+                    <Eye size={16} />
+                    View
+                  </button>
+
+                  {/* ADMIN + OPERATOR ONLY */}
+
+                  {canManageAlerts &&
+                    alert.status === "Active" && (
+                      <button
+                        className="acknowledge-button"
+                        onClick={() =>
+                          handleAcknowledge(alert.id)
+                        }
+                      >
+                        <CheckCircle size={16} />
+                        Acknowledge
+                      </button>
+                    )}
+
+                  {canManageAlerts &&
+                    alert.status !== "Resolved" && (
+                      <button
+                        className="resolve-button"
+                        onClick={() =>
+                          handleResolve(alert.id)
+                        }
+                      >
+                        <CheckCircle size={16} />
+                        Resolve
+                      </button>
+                    )}
+
+                </div>
+
+              </div>
+
             ))}
 
           </div>
-        ) : (
-          <>
-            <Filter
-              size={16}
-              color="#8da2c5"
-            />
-
-            <select
-              className="filter-select"
-              value={filterType}
-              onChange={(e) =>
-                setFilterType(
-                  e.target.value
-                )
-              }
-            >
-              <option value="All">
-                All Types
-              </option>
-
-              {allTypes.map(
-                (type) => (
-                  <option
-                    key={type}
-                    value={type}
-                  >
-                    {type}
-                  </option>
-                )
-              )}
-            </select>
-
-            <select
-              className="filter-select"
-              value={filterRoad}
-              onChange={(e) =>
-                setFilterRoad(
-                  e.target.value
-                )
-              }
-            >
-              <option value="All">
-                All Roads
-              </option>
-
-              {allRoads.map(
-                (road) => (
-                  <option
-                    key={road}
-                    value={road}
-                  >
-                    {road}
-                  </option>
-                )
-              )}
-            </select>
-
-            <select
-              className="filter-select"
-              value={filterSev}
-              onChange={(e) =>
-                setFilterSev(
-                  e.target.value
-                )
-              }
-            >
-              <option value="All">
-                All Severity
-              </option>
-
-              <option value="high">
-                High / Critical
-              </option>
-
-              <option value="medium">
-                Medium / Warning
-              </option>
-
-              <option value="low">
-                Low / Info
-              </option>
-            </select>
-
-            <select
-              className="filter-select"
-              value={filterStat}
-              onChange={(e) =>
-                setFilterStat(
-                  e.target.value
-                )
-              }
-            >
-              <option value="All">
-                All Status
-              </option>
-
-              <option value="active">
-                Active
-              </option>
-
-              <option value="acknowledged">
-                Acknowledged
-              </option>
-
-              <option value="resolved">
-                Resolved
-              </option>
-            </select>
-          </>
         )}
 
       </div>
 
-      {/* ======================================================
-          ALERT LIST
-      ====================================================== */}
+      {/* ===================================================
+          CREATE EMERGENCY MODAL
+      =================================================== */}
 
-      <div>
+      {showModal && (
 
-        <div className="alerts-section-title">
-          {filterStat === "resolved"
-            ? "Resolved Alerts"
-            : "Alerts"}{" "}
-          — {displayed.length}{" "}
-          showing
-        </div>
+        <div className="modal-overlay">
 
-        {loading && (
-          <div className="no-alerts-msg">
-            Loading alerts...
-          </div>
-        )}
+          <div className="emergency-modal">
 
-        {error && (
-          <div className="no-alerts-msg">
-            {error}
-          </div>
-        )}
+            <div className="modal-header">
 
-        {!loading &&
-          !error && (
-            <div className="alerts-list">
+              <div>
+                <h2>
+                  <Siren size={24} />
+                  Report Emergency
+                </h2>
 
-              {displayed.length ===
-                0 && (
-                <div className="no-alerts-msg">
-                  No alerts match the
-                  selected filters.
-                </div>
-              )}
+                <p>
+                  Report a traffic incident or emergency.
+                </p>
+              </div>
 
-              {displayed.map(
-                (alert) => {
-
-                  const cardSev =
-                    alert.status ===
-                    "resolved"
-                      ? "sev-resolved"
-                      : sevClass(
-                          alert.severity
-                        );
-
-                  return (
-                    <div
-                      key={alert.id}
-                      className={`alert-card ${cardSev} ${
-                        alert.status ===
-                        "resolved"
-                          ? "resolved"
-                          : ""
-                      }`}
-                    >
-
-                      {/* TOP */}
-
-                      <div className="alert-card-top">
-
-                        <span
-                          className={`alert-type-badge ${badgeClass(
-                            alert.status ===
-                              "resolved"
-                              ? "resolved"
-                              : alert.severity
-                          )}`}
-                        >
-                          <SeverityIcon
-                            sev={
-                              alert.status ===
-                              "resolved"
-                                ? "low"
-                                : alert.severity
-                            }
-                            size={12}
-                          />
-
-                          {alert.type}
-                        </span>
-
-                        <StatusPill
-                          status={
-                            alert.status
-                          }
-                        />
-
-                      </div>
-
-                      {/* BODY */}
-
-                      <div className="alert-card-body">
-
-                        <div className="alert-road">
-                          {alert.road}
-                        </div>
-
-                        <div className="alert-meta">
-
-                          {alert.speed !=
-                            null && (
-                            <span>
-                              <Navigation
-                                size={
-                                  12
-                                }
-                              />{" "}
-                              {
-                                alert.speed
-                              }{" "}
-                              km/h
-                            </span>
-                          )}
-
-                          {alert.volume !=
-                            null && (
-                            <span>
-                              <Zap
-                                size={
-                                  12
-                                }
-                              />{" "}
-                              {
-                                alert.volume
-                              }{" "}
-                              vehicles
-                            </span>
-                          )}
-
-                          {alert.camera && (
-                            <span>
-                              <Camera
-                                size={
-                                  12
-                                }
-                              />{" "}
-                              {
-                                alert.camera
-                              }
-                            </span>
-                          )}
-
-                        </div>
-
-                        <div className="alert-message">
-                          {
-                            alert.message
-                          }
-                        </div>
-
-                      </div>
-
-                      {/* FOOTER */}
-
-                      <div className="alert-card-footer">
-
-                        <span className="alert-time">
-                          <Clock
-                            size={
-                              12
-                            }
-                            style={{
-                              marginRight: 4,
-                            }}
-                          />
-
-                          {
-                            alert.time
-                          }
-                        </span>
-
-                        <div className="alert-actions">
-
-                          {/* VIEW */}
-
-                          <button
-                            className="btn-alert btn-alert-view"
-                            onClick={() =>
-                              setSelectedAlert(
-                                alert
-                              )
-                            }
-                          >
-                            <Eye
-                              size={
-                                13
-                              }
-                            />
-
-                            View
-                          </button>
-
-                          {/* ACKNOWLEDGE */}
-
-                          {(isAdmin ||
-                            isOperator) &&
-                            alert.status ===
-                              "active" && (
-                              <button
-                                className="btn-alert btn-alert-ack"
-                                onClick={() =>
-                                  acknowledge(
-                                    alert.id
-                                  )
-                                }
-                              >
-                                <UserCheck
-                                  size={
-                                    13
-                                  }
-                                />
-
-                                Acknowledge
-                              </button>
-                            )}
-
-                          {/* RESOLVE */}
-
-                          {(isAdmin ||
-                            isOperator) &&
-                            alert.status !==
-                              "resolved" && (
-                              <button
-                                className="btn-alert btn-alert-resolve"
-                                onClick={() =>
-                                  resolve(
-                                    alert.id
-                                  )
-                                }
-                              >
-                                <CheckCheck
-                                  size={
-                                    13
-                                  }
-                                />
-
-                                Resolve
-                              </button>
-                            )}
-
-                          {/* ADMIN ASSIGN */}
-
-                          {isAdmin &&
-                            alert.status ===
-                              "active" && (
-                              <button className="btn-alert btn-alert-assign">
-                                Assign
-                              </button>
-                            )}
-
-                          {/* COMMUTER DISMISS */}
-
-                          {isCommuter && (
-                            <button
-                              className="btn-alert btn-alert-dismiss"
-                              onClick={() =>
-                                dismiss(
-                                  alert.id
-                                )
-                              }
-                            >
-                              <BellOff
-                                size={
-                                  13
-                                }
-                              />
-
-                              Dismiss
-                            </button>
-                          )}
-
-                        </div>
-                      </div>
-
-                    </div>
-                  );
-                }
-              )}
+              <button
+                className="close-button"
+                onClick={() => setShowModal(false)}
+              >
+                <X size={22} />
+              </button>
 
             </div>
-          )}
 
-      </div>
+            <form onSubmit={handleCreateAlert}>
 
-      {/* ======================================================
-          DETAIL MODAL
-      ====================================================== */}
+              {/* ALERT TYPE */}
 
-      {selectedAlert && (
-        <AlertModal
-          alert={selectedAlert}
-          role={role}
-          onClose={() =>
-            setSelectedAlert(
-              null
-            )
-          }
-          onAck={acknowledge}
-          onResolve={resolve}
-          onDismiss={dismiss}
-        />
-      )}
+              <div className="form-group">
 
-      {/* ======================================================
-          CREATE ALERT MODAL
-      ====================================================== */}
+                <label>Alert Type</label>
 
-      {showReportModal && (
-        <ReportEmergencyModal
-          form={reportForm}
-          setForm={setReportForm}
-          onSubmit={reportEmergency}
-          onClose={() =>
-            setShowReportModal(
-              false
-            )
-          }
-          reporting={reporting}
-        />
-      )}
+                <select
+                  name="alert_type"
+                  value={formData.alert_type}
+                  onChange={handleChange}
+                >
+                  <option value="Accident">
+                    Accident
+                  </option>
 
-    </div>
-  );
-}
+                  <option value="Road Block">
+                    Road Block
+                  </option>
 
-// ============================================================
-// ROLE-AWARE WRAPPER
-// ============================================================
+                  <option value="Traffic Jam">
+                    Traffic Jam
+                  </option>
 
-export default function Alerts() {
-  const userRole =
-    localStorage.getItem(
-      "role"
-    ) || "commuter";
+                  <option value="Vehicle Breakdown">
+                    Vehicle Breakdown
+                  </option>
 
-  if (userRole === "admin") {
-    return (
-      <Layout>
-        <AlertsContent role="admin" />
-      </Layout>
-    );
-  }
+                  <option value="Other">
+                    Other
+                  </option>
+                </select>
 
-  if (userRole === "operator") {
-    return (
-      <div className="operator-layout">
+              </div>
 
-        <OperatorSidebar />
+              {/* DESCRIPTION */}
 
-        <div
-          className="operator-dashboard operator-page-content animate-fade-in"
-          style={{
-            width: "100%",
-            minHeight: "100vh",
-          }}
-        >
-          <AlertsContent
-            role="operator"
-          />
-        </div>
+              <div className="form-group">
 
-      </div>
-    );
-  }
+                <label>Description</label>
 
-  return (
-    <CommuterAlertsWrapper />
-  );
-}
+                <textarea
+                  name="description"
+                  value={formData.description}
+                  onChange={handleChange}
+                  placeholder="Describe the emergency..."
+                  rows="4"
+                  required
+                />
 
-// ============================================================
-// COMMUTER WRAPPER
-// ============================================================
+              </div>
 
-function CommuterAlertsWrapper() {
-  const username =
-    localStorage.getItem(
-      "username"
-    ) || "User";
+              {/* LOCATION */}
 
-  const [timeStr, setTimeStr] =
-    useState(
-      () =>
-        new Date().toLocaleTimeString(
-          [],
-          {
-            hour: "2-digit",
-            minute: "2-digit",
-            second: "2-digit",
-          }
-        )
-    );
+              <div className="form-group">
 
-  useEffect(() => {
-    const timer =
-      setInterval(() => {
-        setTimeStr(
-          new Date().toLocaleTimeString(
-            [],
-            {
-              hour: "2-digit",
-              minute: "2-digit",
-              second: "2-digit",
-            }
-          )
-        );
-      }, 1000);
+                <label>Location</label>
 
-    return () =>
-      clearInterval(timer);
-  }, []);
+                <input
+                  type="text"
+                  name="location"
+                  value={formData.location}
+                  onChange={handleChange}
+                  placeholder="Enter location"
+                  required
+                />
 
-  return (
-    <div className="commuter-dashboard">
+              </div>
 
-      <motion.header
-        className="commuter-topbar"
-        initial={{
-          opacity: 0,
-          y: -30,
-        }}
-        animate={{
-          opacity: 1,
-          y: 0,
-        }}
-        transition={{
-          duration: 0.6,
-        }}
-      >
-        <div className="top-left">
+              {/* COORDINATES */}
 
-          <div>
-            <h1>
-              AI Traffic Assistant
-            </h1>
+              <div className="coordinates">
 
-            <span>
-              Welcome back,{" "}
-              {username}
-            </span>
+                <div className="form-group">
+
+                  <label>Latitude</label>
+
+                  <input
+                    type="number"
+                    step="any"
+                    name="latitude"
+                    value={formData.latitude}
+                    onChange={handleChange}
+                    placeholder="21.1458"
+                  />
+
+                </div>
+
+                <div className="form-group">
+
+                  <label>Longitude</label>
+
+                  <input
+                    type="number"
+                    step="any"
+                    name="longitude"
+                    value={formData.longitude}
+                    onChange={handleChange}
+                    placeholder="79.0882"
+                  />
+
+                </div>
+
+              </div>
+
+              {/* SEVERITY */}
+
+              <div className="form-group">
+
+                <label>Severity</label>
+
+                <select
+                  name="severity"
+                  value={formData.severity}
+                  onChange={handleChange}
+                >
+                  <option value="Low">Low</option>
+                  <option value="Medium">Medium</option>
+                  <option value="High">High</option>
+                  <option value="Critical">
+                    Critical
+                  </option>
+                </select>
+
+              </div>
+
+              {/* BUTTONS */}
+
+              <div className="modal-actions">
+
+                <button
+                  type="button"
+                  className="cancel-button"
+                  onClick={() => setShowModal(false)}
+                >
+                  Cancel
+                </button>
+
+                <button
+                  type="submit"
+                  className="submit-emergency-button"
+                  disabled={submitting}
+                >
+                  <Siren size={18} />
+
+                  {submitting
+                    ? "Reporting..."
+                    : "Report Emergency"}
+                </button>
+
+              </div>
+
+            </form>
+
           </div>
 
         </div>
 
-        <div className="top-right">
-          <UserMenu />
+      )}
+
+      {/* ===================================================
+          VIEW ALERT MODAL
+      =================================================== */}
+
+      {selectedAlert && (
+
+        <div className="modal-overlay">
+
+          <div className="view-modal">
+
+            <div className="modal-header">
+
+              <div>
+                <h2>
+                  Alert Details
+                </h2>
+
+                <p>
+                  Alert #{selectedAlert.id}
+                </p>
+              </div>
+
+              <button
+                className="close-button"
+                onClick={() =>
+                  setSelectedAlert(null)
+                }
+              >
+                <X size={22} />
+              </button>
+
+            </div>
+
+            <div className="details">
+
+              <div>
+                <strong>Type</strong>
+                <span>
+                  {selectedAlert.alert_type}
+                </span>
+              </div>
+
+              <div>
+                <strong>Description</strong>
+                <span>
+                  {selectedAlert.description}
+                </span>
+              </div>
+
+              <div>
+                <strong>Location</strong>
+                <span>
+                  {selectedAlert.location}
+                </span>
+              </div>
+
+              <div>
+                <strong>Severity</strong>
+                <span>
+                  {selectedAlert.severity}
+                </span>
+              </div>
+
+              <div>
+                <strong>Status</strong>
+                <span>
+                  {selectedAlert.status}
+                </span>
+              </div>
+
+              <div>
+                <strong>Reported By User ID</strong>
+                <span>
+                  {selectedAlert.reported_by}
+                </span>
+              </div>
+
+              <div>
+                <strong>Created At</strong>
+                <span>
+                  {selectedAlert.created_at
+                    ? new Date(
+                        selectedAlert.created_at
+                      ).toLocaleString()
+                    : "-"}
+                </span>
+              </div>
+
+            </div>
+
+          </div>
+
         </div>
 
-      </motion.header>
+      )}
 
-      <nav
-        className="commuter-nav"
-        aria-label="Commuter navigation"
-      >
-        <NavLink
-          to="/commuter"
-          end
-        >
-          Home
-        </NavLink>
+      {/* ===================================================
+          PAGE STYLES
+      =================================================== */}
 
-        <NavLink to="/live-map">
-          Live Traffic
-        </NavLink>
+      <style>{`
 
-        <NavLink to="/prediction">
-          Prediction
-        </NavLink>
+        .alerts-page {
+          padding: 28px;
+          min-height: 100vh;
+          color: white;
+        }
 
-        <NavLink to="/alerts">
-          Alerts
-        </NavLink>
-      </nav>
+        /* HEADER */
 
-      <div
-        className="dashboard-container"
-        style={{
-          maxWidth: "1000px",
-          margin: "0 auto",
-        }}
-      >
-        <AlertsContent
-          role="commuter"
-        />
-      </div>
+        .alerts-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 25px;
+        }
+
+        .alerts-header h1 {
+          margin: 0;
+          font-size: 30px;
+          font-weight: 800;
+        }
+
+        .alerts-header p {
+          margin-top: 7px;
+          color: #9caec2;
+        }
+
+        /* RED EMERGENCY BUTTON */
+
+        .emergency-button {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          border: none;
+          border-radius: 10px;
+          padding: 15px 25px;
+          background: linear-gradient(
+            135deg,
+            #ff1f35,
+            #ef172d
+          );
+          color: white;
+          font-size: 16px;
+          font-weight: 800;
+          cursor: pointer;
+          box-shadow:
+            0 0 20px rgba(255, 31, 53, 0.45);
+          transition: all 0.2s ease;
+        }
+
+        .emergency-button:hover {
+          transform: translateY(-2px);
+          background: linear-gradient(
+            135deg,
+            #ff3448,
+            #ff142b
+          );
+          box-shadow:
+            0 0 30px rgba(255, 31, 53, 0.65);
+        }
+
+        /* STATS */
+
+        .stats-grid {
+          display: grid;
+          grid-template-columns: repeat(4, 1fr);
+          gap: 18px;
+          margin-bottom: 25px;
+        }
+
+        .stat-card {
+          display: flex;
+          align-items: center;
+          gap: 15px;
+          padding: 20px;
+          border-radius: 15px;
+          background: rgba(5, 20, 40, 0.75);
+          border: 1px solid rgba(100, 180, 255, 0.12);
+        }
+
+        .stat-icon {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 45px;
+          height: 45px;
+          border-radius: 10px;
+        }
+
+        .stat-card h2 {
+          margin: 0;
+          font-size: 27px;
+        }
+
+        .stat-card span {
+          font-size: 12px;
+          color: #9db0c5;
+        }
+
+        .critical-card .stat-icon {
+          color: #ff3348;
+          background: rgba(255, 50, 70, 0.1);
+        }
+
+        .warning-card .stat-icon {
+          color: #ffc400;
+          background: rgba(255, 196, 0, 0.1);
+        }
+
+        .active-card .stat-icon {
+          color: #00d9ff;
+          background: rgba(0, 217, 255, 0.1);
+        }
+
+        .resolved-card .stat-icon {
+          color: #00ed8a;
+          background: rgba(0, 237, 138, 0.1);
+        }
+
+        /* ALERT SECTION */
+
+        .alerts-section {
+          margin-top: 15px;
+        }
+
+        .section-title {
+          margin-bottom: 15px;
+          font-size: 14px;
+          font-weight: 700;
+          color: #9eb1c6;
+        }
+
+        .alerts-list {
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+        }
+
+        .alert-card {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 18px 20px;
+          border-radius: 15px;
+          background: rgba(5, 20, 40, 0.75);
+          border: 1px solid rgba(100, 180, 255, 0.12);
+          border-left: 4px solid #00bfff;
+        }
+
+        .alert-card.severity-critical {
+          border-left-color: #ff3045;
+        }
+
+        .alert-card.severity-high {
+          border-left-color: #ff8a00;
+        }
+
+        .alert-card.severity-medium {
+          border-left-color: #ffc400;
+        }
+
+        .alert-card.severity-low {
+          border-left-color: #00d9ff;
+        }
+
+        .alert-main {
+          display: flex;
+          gap: 15px;
+          align-items: center;
+        }
+
+        .alert-icon {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          min-width: 50px;
+          height: 50px;
+          border-radius: 50%;
+          color: #ff4050;
+          background: rgba(255, 50, 70, 0.12);
+        }
+
+        .alert-info h3 {
+          margin: 0;
+          font-size: 17px;
+        }
+
+        .alert-title-row {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          margin-bottom: 7px;
+        }
+
+        .location {
+          display: flex;
+          align-items: center;
+          gap: 5px;
+          color: #cbd6e3;
+          font-size: 13px;
+        }
+
+        .description {
+          margin: 6px 0 0;
+          color: #8fa2b7;
+          font-size: 13px;
+        }
+
+        .severity-badge,
+        .status-badge {
+          padding: 4px 8px;
+          border-radius: 6px;
+          font-size: 10px;
+          font-weight: 800;
+          text-transform: uppercase;
+        }
+
+        .severity-critical {
+          color: #ff4557;
+        }
+
+        .severity-high {
+          color: #ff9d24;
+        }
+
+        .severity-medium {
+          color: #ffc400;
+        }
+
+        .severity-low {
+          color: #00d9ff;
+        }
+
+        .severity-badge.severity-critical {
+          background: rgba(255, 50, 70, 0.12);
+        }
+
+        .severity-badge.severity-high {
+          background: rgba(255, 157, 36, 0.12);
+        }
+
+        .severity-badge.severity-medium {
+          background: rgba(255, 196, 0, 0.12);
+        }
+
+        .severity-badge.severity-low {
+          background: rgba(0, 217, 255, 0.12);
+        }
+
+        .status-active {
+          color: #00d9ff;
+          background: rgba(0, 217, 255, 0.1);
+        }
+
+        .status-acknowledged {
+          color: #a66cff;
+          background: rgba(166, 108, 255, 0.12);
+        }
+
+        .status-resolved {
+          color: #00ed8a;
+          background: rgba(0, 237, 138, 0.1);
+        }
+
+        /* ACTIONS */
+
+        .alert-actions {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+        }
+
+        .alert-time {
+          color: #899bad;
+          font-size: 12px;
+          margin-right: 5px;
+        }
+
+        .alert-actions button {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          padding: 9px 13px;
+          border-radius: 8px;
+          background: transparent;
+          font-size: 12px;
+          font-weight: 700;
+          cursor: pointer;
+        }
+
+        .view-button {
+          border: 1px solid #008bd1;
+          color: #00bfff;
+        }
+
+        .view-button:hover {
+          background: rgba(0, 191, 255, 0.1);
+        }
+
+        .acknowledge-button {
+          border: 1px solid #d39a00;
+          color: #ffc400;
+        }
+
+        .acknowledge-button:hover {
+          background: rgba(255, 196, 0, 0.1);
+        }
+
+        .resolve-button {
+          border: 1px solid #00a970;
+          color: #00ed8a;
+        }
+
+        .resolve-button:hover {
+          background: rgba(0, 237, 138, 0.1);
+        }
+
+        /* MODAL */
+
+        .modal-overlay {
+          position: fixed;
+          inset: 0;
+          z-index: 9999;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: rgba(0, 0, 0, 0.75);
+          backdrop-filter: blur(5px);
+          padding: 20px;
+        }
+
+        .emergency-modal,
+        .view-modal {
+          width: 100%;
+          max-width: 600px;
+          max-height: 90vh;
+          overflow-y: auto;
+          border-radius: 18px;
+          background: #071629;
+          border: 1px solid rgba(0, 217, 255, 0.2);
+          box-shadow:
+            0 20px 70px rgba(0, 0, 0, 0.6);
+          padding: 25px;
+        }
+
+        .modal-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+          margin-bottom: 25px;
+        }
+
+        .modal-header h2 {
+          display: flex;
+          align-items: center;
+          gap: 9px;
+          margin: 0;
+        }
+
+        .modal-header p {
+          color: #8fa2b7;
+          margin-top: 6px;
+        }
+
+        .close-button {
+          border: none;
+          background: transparent;
+          color: #9db0c5;
+          cursor: pointer;
+        }
+
+        .close-button:hover {
+          color: white;
+        }
+
+        .form-group {
+          display: flex;
+          flex-direction: column;
+          gap: 7px;
+          margin-bottom: 17px;
+        }
+
+        .form-group label {
+          color: #d5dfeb;
+          font-size: 13px;
+          font-weight: 700;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+          width: 100%;
+          box-sizing: border-box;
+          padding: 12px;
+          border-radius: 8px;
+          border: 1px solid #243a55;
+          background: #0b1d32;
+          color: white;
+          outline: none;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+          border-color: #00cfff;
+        }
+
+        .coordinates {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 15px;
+        }
+
+        .modal-actions {
+          display: flex;
+          justify-content: flex-end;
+          gap: 12px;
+          margin-top: 25px;
+        }
+
+        .cancel-button {
+          padding: 11px 20px;
+          border-radius: 8px;
+          border: 1px solid #394b60;
+          background: transparent;
+          color: #bdc9d6;
+          cursor: pointer;
+        }
+
+        .submit-emergency-button {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 11px 20px;
+          border: none;
+          border-radius: 8px;
+          background: #f52238;
+          color: white;
+          font-weight: 800;
+          cursor: pointer;
+          box-shadow: 0 0 18px rgba(245, 34, 56, 0.3);
+        }
+
+        .submit-emergency-button:hover {
+          background: #ff3046;
+        }
+
+        .submit-emergency-button:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
+        }
+
+        /* DETAILS */
+
+        .details {
+          display: flex;
+          flex-direction: column;
+          gap: 15px;
+        }
+
+        .details > div {
+          display: flex;
+          flex-direction: column;
+          gap: 5px;
+          padding-bottom: 12px;
+          border-bottom: 1px solid rgba(255,255,255,0.08);
+        }
+
+        .details strong {
+          color: #8297ae;
+          font-size: 12px;
+          text-transform: uppercase;
+        }
+
+        .details span {
+          color: white;
+        }
+
+        .loading,
+        .empty-state {
+          padding: 50px;
+          text-align: center;
+          color: #91a4b9;
+        }
+
+        .empty-state svg {
+          color: #00ed8a;
+        }
+
+        /* RESPONSIVE */
+
+        @media (max-width: 1000px) {
+
+          .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+          }
+
+          .alert-card {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 18px;
+          }
+
+          .alert-actions {
+            width: 100%;
+            flex-wrap: wrap;
+          }
+
+        }
+
+        @media (max-width: 600px) {
+
+          .alerts-page {
+            padding: 15px;
+          }
+
+          .alerts-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 20px;
+          }
+
+          .emergency-button {
+            width: 100%;
+            justify-content: center;
+          }
+
+          .stats-grid {
+            grid-template-columns: 1fr;
+          }
+
+          .coordinates {
+            grid-template-columns: 1fr;
+          }
+
+        }
+
+      `}</style>
 
     </div>
   );
-}
+};
+
+export default Alerts;
