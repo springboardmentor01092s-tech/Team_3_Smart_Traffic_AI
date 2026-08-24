@@ -13,7 +13,8 @@ export default function UserMenu() {
   const navigate = useNavigate();
   const menuRef = useRef(null);
   const [open, setOpen] = useState(false);
-  const username = localStorage.getItem("username") || "User";
+  const rawUsername = localStorage.getItem("username") || "User";
+  const username = rawUsername.replace(/\s*\([^)]*\)/g, "").trim();
   const role = localStorage.getItem("role") || "commuter";
 
   useEffect(() => {

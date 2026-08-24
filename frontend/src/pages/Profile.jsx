@@ -3,7 +3,8 @@ import { useEffect } from "react";
 const roleLabels = { admin: "Administrator", operator: "Operator", commuter: "Commuter" };
 
 export default function Profile() {
-  const username = localStorage.getItem("username") || "User";
+  const rawUsername = localStorage.getItem("username") || "User";
+  const username = rawUsername.replace(/\s*\([^)]*\)/g, "").trim();
   const role = localStorage.getItem("role") || "commuter";
   const email = localStorage.getItem("email") || "Not available";
 

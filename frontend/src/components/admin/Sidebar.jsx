@@ -220,7 +220,7 @@ export default function Sidebar({
 
                             <h4>
 
-                                {profile.name}
+                                {profile.name?.replace(/\s*\([^)]*\)/g, "").trim()}
 
                             </h4>
 

@@ -33,7 +33,8 @@ export default function LiveMap() {
 
   // Get Role and Profile from localStorage
   const userRole = localStorage.getItem("role") || "commuter";
-  const username = localStorage.getItem("username") || "User";
+  const rawUsername = localStorage.getItem("username") || "User";
+  const username = rawUsername.replace(/\s*\([^)]*\)/g, "").trim();
 
   // Clock state (for Commuter header)
   const [timeStr, setTimeStr] = useState("");
@@ -314,7 +315,7 @@ export default function LiveMap() {
         <NavLink to="/live-map">Live Traffic</NavLink>
         <NavLink to="/prediction">Prediction</NavLink>
         <a href="/commuter#routes">Routes</a>
-        <a href="/commuter#alerts">Alerts</a>
+        <NavLink to="/alerts">Alerts</NavLink>
         <a href="/commuter#profile">Profile</a>
       </nav>
 

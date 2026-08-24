@@ -84,7 +84,8 @@ const alerts = [
 ];
 
 export default function CommuterDashboard() {
-    const username = localStorage.getItem("username") || "Commuter";
+    const rawUsername = localStorage.getItem("username") || "Commuter";
+    const username = rawUsername.replace(/\s*\([^)]*\)/g, "").trim();
 
 const [time, setTime] = useState("");
 

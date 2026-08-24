@@ -12,7 +12,8 @@ import UserMenu from "../UserMenu";
 
 export default function Topbar() {
 
-    const username = localStorage.getItem("username") || "Admin";
+    const rawUsername = localStorage.getItem("username") || "Admin";
+    const username = rawUsername.replace(/\s*\([^)]*\)/g, "").trim();
 
     const [time, setTime] = useState("");
 

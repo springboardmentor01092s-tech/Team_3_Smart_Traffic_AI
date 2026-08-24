@@ -155,3 +155,68 @@ def resolve_alert(
     db.refresh(alert)
 
     return alert
+
+
+# ============================================================
+# DELETE ALERT
+# Only Admin and Operator
+# ============================================================
+
+@router.delete("/{alert_id}")
+def delete_alert(
+    alert_id: int,
+    db: Session = Depends(get_db),
+    current_user=Depends(operator_required)
+):
+    alert = (
+        db.query(models.Alert)
+        .filter(models.Alert.id == alert_id)
+        .first()
+    )
+
+    if not alert:
+        raise HTTPException(
+            status_code=404,
+            detail="Alert not found"
+        )
+
+    db.delete(alert)
+    db.commit()
+
+    return {"detail": "Alert deleted successfully"}
+
+
+# ============================================================
+# UPDATE ALERT
+# Only Admin and Operator
+# ============================================================
+
+@router.put("/{alert_id}", response_model=schemas.AlertResponse)
+def update_alert(
+    alert_id: int,
+    alert_update: schemas.AlertCreate,
+    db: Session = Depends(get_db),
+    current_user=Depends(operator_required)
+):
+    alert = (
+        db.query(models.Alert)
+        .filter(models.Alert.id == alert_id)
+        .first()
+    )
+
+    if not alert:
+        raise HTTPException(
+            status_code=404,
+            detail="Alert not found"
+        )
+
+    alert.alert_type = alert_update.alert_type
+    alert.description = alert_update.description
+    alert.location = alert_update.location
+    if alert_update.severity:
+        alert.severity = alert_update.severity
+
+    db.commit()
+    db.refresh(alert)
+
+    return alert

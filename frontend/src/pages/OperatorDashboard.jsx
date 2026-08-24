@@ -108,7 +108,8 @@ const incidents=[
 
 export default function OperatorDashboard(){
 
-    const username=localStorage.getItem("username") || "Operator";
+    const rawUsername = localStorage.getItem("username") || "Operator";
+    const username = rawUsername.replace(/\s*\([^)]*\)/g, "").trim();
 
     const [time,setTime]=useState("");
 
