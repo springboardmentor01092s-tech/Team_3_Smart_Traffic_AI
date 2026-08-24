@@ -470,18 +470,22 @@ const Alerts = () => {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="alerts-page" style={{ padding: "40px", color: "#fff" }}>
-        <div className="loading">Loading traffic alerts...</div>
-      </div>
-    );
-  }
-
   // =========================================================
   // RENDER ALERTS PAGE CONTENT
+  // (loading is handled INSIDE this content block, not before the
+  // role-based layout, so the sidebar/topbar/nav is always visible —
+  // even while the initial fetch is in progress or fails)
   // =========================================================
-  const renderAlertsContent = () => (
+  const renderAlertsContent = () => {
+    if (loading) {
+      return (
+        <div className="alerts-page" style={{ padding: "40px", color: "#fff" }}>
+          <div className="loading">Loading traffic alerts...</div>
+        </div>
+      );
+    }
+
+    return (
     <div className="alerts-page">
       {/* 1. HEADER LAYOUT */}
       <div className="alerts-header">
@@ -1050,7 +1054,8 @@ const Alerts = () => {
         </div>
       )}
     </div>
-  );
+    );
+  };
 
   // =========================================================
   // LAYOUT WRAPPING BY ROLE
@@ -1114,7 +1119,7 @@ const Alerts = () => {
         <NavLink to="/live-map">Live Traffic</NavLink>
         <NavLink to="/prediction">Prediction</NavLink>
         <NavLink to="/alerts">Alerts</NavLink>
-        <a href="/commuter#profile">Profile</a>
+        <NavLink to="/profile">Profile</NavLink>
       </nav>
 
       <div
