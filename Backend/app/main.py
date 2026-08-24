@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from .database import engine, Base
 from . import ml_loader  
-from .routers import auth, traffic, prediction, routes,reports
+from .routers import auth, traffic, prediction, routes,reports, analytics
 from app.routers import alerts
 
 Base.metadata.create_all(bind=engine)
@@ -30,6 +30,7 @@ app.include_router(prediction.router)
 app.include_router(routes.router)
 app.include_router(reports.router)
 app.include_router(alerts.router)
+app.include_router(analytics.router)
 
 @app.get("/", tags=["Root"])
 def home():
