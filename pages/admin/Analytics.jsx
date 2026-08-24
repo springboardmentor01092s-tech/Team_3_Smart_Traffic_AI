@@ -17,6 +17,9 @@ import {
   CartesianGrid,
   Tooltip,
   Legend,
+  PieChart,
+  Pie,
+  Cell,
 } from "recharts";
 
 import Layout from "../../components/admin/Layout";
@@ -80,6 +83,12 @@ function heatColor(score) {
   if (score < 2.3) return "rgba(245,158,11,0.8)"; // medium - amber
   return "rgba(239,68,68,0.85)"; // high - red
 }
+
+const CONGESTION_COLORS = {
+  Low: "#22c55e",
+  Medium: "#f59e0b",
+  High: "#ef4444",
+};
 
 export default function Analytics() {
   const [days, setDays] = useState(7);
@@ -161,6 +170,27 @@ export default function Analytics() {
     [overview]
   );
 
+  // Historical Insights pie: bucket every heatmap reading into
+  // Low / Medium / High congestion so the insights panel has an
+  // actual chart to show, not just plain text lines.
+  const congestionPieData = useMemo(() => {
+    let low = 0, medium = 0, high = 0;
+    heatmap.forEach((road) => {
+      road.cells.forEach((cell) => {
+        const score = cell.avg_congestion_score;
+        if (score == null) return;
+        if (score < 1.5) low += 1;
+        else if (score < 2.3) medium += 1;
+        else high += 1;
+      });
+    });
+    return [
+      { name: "Low", value: low },
+      { name: "Medium", value: medium },
+      { name: "High", value: high },
+    ].filter((d) => d.value > 0);
+  }, [heatmap]);
+
   return (
     <Layout>
       <div className="analytics-page">
@@ -216,39 +246,65 @@ export default function Analytics() {
           ))}
         </div>
 
-        <div className="analytics-grid">
-          {/* TREND CHART */}
-          <div className="glass-panel trend-panel">
-            <div className="panel-title">Traffic Trend</div>
-            <ResponsiveContainer width="100%" height={280}>
-              <AreaChart data={trend}>
-                <defs>
-                  <linearGradient id="speedColor" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#00d4ff" stopOpacity={0.5} />
-                    <stop offset="95%" stopColor="#00d4ff" stopOpacity={0} />
-                  </linearGradient>
-                  <linearGradient id="congestionColor" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.5} />
-                    <stop offset="95%" stopColor="#f59e0b" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.08)" />
-                <XAxis dataKey="date" stroke="#8da2c5" fontSize={12} />
-                <YAxis stroke="#8da2c5" fontSize={12} />
-                <Tooltip
-                  contentStyle={{ background: "#10192c", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 10 }}
-                  labelStyle={{ color: "#fff" }}
-                />
-                <Legend />
-                <Area type="monotone" dataKey="avg_speed" name="Avg Speed (km/h)" stroke="#00d4ff" fill="url(#speedColor)" strokeWidth={2} />
-                <Area type="monotone" dataKey="avg_congestion_score" name="Congestion Score" stroke="#f59e0b" fill="url(#congestionColor)" strokeWidth={2} />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
+        {/* TRAFFIC TREND — full width panel */}
+        <div className="glass-panel trend-panel">
+          <div className="panel-title">Traffic Trend</div>
+          <ResponsiveContainer width="100%" height={300}>
+            <AreaChart data={trend}>
+              <defs>
+                <linearGradient id="speedColor" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#00d4ff" stopOpacity={0.5} />
+                  <stop offset="95%" stopColor="#00d4ff" stopOpacity={0} />
+                </linearGradient>
+                <linearGradient id="congestionColor" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.5} />
+                  <stop offset="95%" stopColor="#f59e0b" stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.08)" />
+              <XAxis dataKey="date" stroke="#8da2c5" fontSize={12} />
+              <YAxis stroke="#8da2c5" fontSize={12} />
+              <Tooltip
+                contentStyle={{ background: "#10192c", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 10 }}
+                labelStyle={{ color: "#fff" }}
+              />
+              <Legend />
+              <Area type="monotone" dataKey="avg_speed" name="Avg Speed (km/h)" stroke="#00d4ff" fill="url(#speedColor)" strokeWidth={2} />
+              <Area type="monotone" dataKey="avg_congestion_score" name="Congestion Score" stroke="#f59e0b" fill="url(#congestionColor)" strokeWidth={2} />
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
 
-          {/* HISTORICAL INSIGHTS */}
-          <div className="glass-panel insights-panel">
-            <div className="panel-title">Historical Insights</div>
+        {/* HISTORICAL INSIGHTS — full width panel, pie chart of
+            congestion severity + the narrative insight lines */}
+        <div className="glass-panel insights-panel">
+          <div className="panel-title">Historical Insights</div>
+          <div className="insights-panel-body">
+            <div className="insights-pie-wrap">
+              <ResponsiveContainer width="100%" height={220}>
+                <PieChart>
+                  <Pie
+                    data={congestionPieData}
+                    dataKey="value"
+                    nameKey="name"
+                    innerRadius={55}
+                    outerRadius={85}
+                    paddingAngle={3}
+                  >
+                    {congestionPieData.map((entry) => (
+                      <Cell key={entry.name} fill={CONGESTION_COLORS[entry.name]} />
+                    ))}
+                  </Pie>
+                  <Tooltip
+                    contentStyle={{ background: "#10192c", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 10 }}
+                    labelStyle={{ color: "#fff" }}
+                  />
+                  <Legend />
+                </PieChart>
+              </ResponsiveContainer>
+              <div className="pie-caption">Congestion reading split (Low / Medium / High)</div>
+            </div>
+
             <ul className="insights-list">
               {insights.map((line, idx) => (
                 <li key={idx}>{line}</li>
