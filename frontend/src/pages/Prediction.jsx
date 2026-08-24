@@ -14,6 +14,12 @@ const DAYS = [
   { label: "Sunday", value: 6 },
 ];
 
+// These must exactly match the categories the ML model's LabelEncoders
+// were trained on (Backend/app/ml/model_bundle.pkl). Free-text input here
+// causes a 400 "Unrecognized category" error from /prediction/predict.
+const CITY_ZONES = ["Commercial", "Downtown", "Industrial", "Residential", "Suburban"];
+const ROAD_TYPES = ["Highway", "Local Road", "Main Road"];
+
 // Shared prediction form & result — all logic preserved exactly as-is
 function PredictionContent() {
   const [form, setForm] = useState({
@@ -21,8 +27,8 @@ function PredictionContent() {
     average_speed_kmph: 30,
     hour: 9,
     day_of_week: 0,
-    city_zone: "",
-    road_type: "",
+    city_zone: "Downtown",
+    road_type: "Highway",
     weather_condition: "Clear",
     accident_reported: false,
   });
@@ -116,26 +122,20 @@ function PredictionContent() {
 
         <label>
           City Zone
-          <input
-            type="text"
-            name="city_zone"
-            placeholder="e.g. Central Delhi"
-            value={form.city_zone}
-            onChange={handleChange}
-            required
-          />
+          <select name="city_zone" value={form.city_zone} onChange={handleChange} required>
+            {CITY_ZONES.map((zone) => (
+              <option key={zone} value={zone}>{zone}</option>
+            ))}
+          </select>
         </label>
 
         <label>
           Road Type
-          <input
-            type="text"
-            name="road_type"
-            placeholder="e.g. Highway"
-            value={form.road_type}
-            onChange={handleChange}
-            required
-          />
+          <select name="road_type" value={form.road_type} onChange={handleChange} required>
+            {ROAD_TYPES.map((type) => (
+              <option key={type} value={type}>{type}</option>
+            ))}
+          </select>
         </label>
 
         <label>
