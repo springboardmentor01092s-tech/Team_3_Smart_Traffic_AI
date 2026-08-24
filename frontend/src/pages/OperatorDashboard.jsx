@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 import Particles from "@tsparticles/react";
 import { loadSlim } from "@tsparticles/slim";
@@ -108,6 +109,7 @@ const incidents=[
 
 export default function OperatorDashboard(){
 
+    const navigate = useNavigate();
     const rawUsername = localStorage.getItem("username") || "Operator";
     const username = rawUsername.replace(/\s*\([^)]*\)/g, "").trim();
 
@@ -327,7 +329,7 @@ export default function OperatorDashboard(){
 
                         <div className="hero-buttons">
 
-                            <button>
+                            <button onClick={() => navigate("/live-map")}>
 
                                 <Navigation size={18}/>
 
@@ -335,7 +337,7 @@ export default function OperatorDashboard(){
 
                             </button>
 
-                            <button className="secondary">
+                            <button className="secondary" onClick={() => navigate("/prediction")}>
 
                                 <Radar size={18}/>
 
