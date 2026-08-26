@@ -10,19 +10,14 @@ import Prediction from "./pages/Prediction";
 import LiveMap from "./pages/LiveMap";
 import Alerts from "./pages/Alerts";
 import Profile from "./pages/Profile";
+import Reports from "./pages/admin/Reports";
 
 function App() {
   return (
     <Routes>
-      <Route
-        path="/"
-        element={<Login />}
-      />
+      <Route path="/" element={<Login />} />
 
-      <Route
-        path="/register"
-        element={<Register />}
-      />
+      <Route path="/register" element={<Register />} />
 
       <Route
         path="/admin"
@@ -87,12 +82,19 @@ function App() {
         }
       />
 
-
       <Route
         path="/admin/analytics"
         element={
           <ProtectedRoute role="admin">
             <Analytics />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/reports"
+        element={
+          <ProtectedRoute role="admin">
+            <Reports />
           </ProtectedRoute>
         }
       />
