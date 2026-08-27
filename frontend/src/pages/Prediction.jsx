@@ -46,8 +46,8 @@ function PredictionContent() {
   const [routeError, setRouteError] = useState("");
   const [routeLoading, setRouteLoading] = useState(false);
 
-  const [origin, setOrigin] = useState("Connaught Place");
-  const [destination, setDestination] = useState("Noida");
+  const [origin] = useState("Noida");
+  const [destination, setDestination] = useState("Connaught Place");
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -236,8 +236,8 @@ function PredictionContent() {
         <div className="route-form">
           <label>
             Origin
-            <select value={origin} onChange={(e) => setOrigin(e.target.value)}>
-              <option value="Connaught Place">Connaught Place</option>
+            <select value={origin} disabled>
+              <option value="Noida">Noida</option>
             </select>
           </label>
 
@@ -247,11 +247,13 @@ function PredictionContent() {
               value={destination}
               onChange={(e) => setDestination(e.target.value)}
             >
-              <option value="Noida">Noida</option>
+              <option value="Connaught Place">Connaught Place</option>
               <option value="Gurgaon">Gurgaon</option>
+              <option value="Ghaziabad">Ghaziabad</option>
+              <option value="Greater Noida">Greater Noida</option>
+              <option value="South Delhi">South Delhi</option>
             </select>
           </label>
-
           <button
             type="button"
             onClick={handleRouteRecommendation}

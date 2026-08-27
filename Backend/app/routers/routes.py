@@ -26,13 +26,29 @@ ROAD_DISTANCE_KM = {
 }
 
 ROUTE_OPTIONS = {
-    ("Connaught Place", "Noida"): [
+    ("Noida", "Connaught Place"): [
         "NH-24",
         "Outer Ring Road",
     ],
-    ("Connaught Place", "Gurgaon"): [
+
+    ("Noida", "Gurgaon"): [
+        "Outer Ring Road",
         "Ring Road",
-        "MG Road",
+    ],
+
+    ("Noida", "Ghaziabad"): [
+        "NH-24",
+        "Outer Ring Road",
+    ],
+
+    ("Noida", "Greater Noida"): [
+        "NH-24",
+        "Outer Ring Road",
+    ],
+
+    ("Noida", "South Delhi"): [
+        "Outer Ring Road",
+        "Ring Road",
     ],
 }
 
