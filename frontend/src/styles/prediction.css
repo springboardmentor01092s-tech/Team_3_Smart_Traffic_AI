@@ -24,7 +24,9 @@
   background: rgba(16, 25, 44, 0.72);
   border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 22px;
-  box-shadow: inset 0 1px rgba(255, 255, 255, 0.05), 0 15px 45px rgba(0, 0, 0, 0.45);
+  box-shadow:
+    inset 0 1px rgba(255, 255, 255, 0.05),
+    0 15px 45px rgba(0, 0, 0, 0.45);
   backdrop-filter: blur(22px);
 }
 
@@ -54,7 +56,9 @@
   background: #13233f;
   color: #eef6ff;
   font: inherit;
-  transition: border-color 0.25s, box-shadow 0.25s;
+  transition:
+    border-color 0.25s,
+    box-shadow 0.25s;
 }
 
 .prediction-form input::placeholder {
@@ -99,7 +103,10 @@
   color: #07111f;
   font: inherit;
   font-weight: 700;
-  transition: transform 0.25s, box-shadow 0.25s, opacity 0.25s;
+  transition:
+    transform 0.25s,
+    box-shadow 0.25s,
+    opacity 0.25s;
 }
 
 .prediction-form button:hover:not(:disabled) {
@@ -139,9 +146,15 @@
   color: #95a9c8;
 }
 
-.prediction-result.level-low { border-left: 5px solid #00ff95; }
-.prediction-result.level-medium { border-left: 5px solid #ffb100; }
-.prediction-result.level-high { border-left: 5px solid #ff4d67; }
+.prediction-result.level-low {
+  border-left: 5px solid #00ff95;
+}
+.prediction-result.level-medium {
+  border-left: 5px solid #ffb100;
+}
+.prediction-result.level-high {
+  border-left: 5px solid #ff4d67;
+}
 
 .probabilities {
   display: grid;
@@ -190,5 +203,178 @@
 
   .checkbox-label {
     align-self: auto;
+  }
+}
+/* =========================================================
+   AI ROUTE RECOMMENDATION
+   ========================================================= */
+
+.route-recommendation {
+  margin-top: 35px;
+  padding: 28px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.12);
+}
+
+.route-recommendation h2 {
+  margin: 0 0 8px;
+  font-size: 24px;
+}
+
+.route-recommendation > p {
+  margin: 0 0 24px;
+  opacity: 0.7;
+  line-height: 1.6;
+}
+
+.route-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  gap: 16px;
+  align-items: end;
+  margin-bottom: 28px;
+}
+
+.route-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.route-form select {
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.07);
+  color: inherit;
+  font-size: 14px;
+  outline: none;
+}
+
+.route-form select:focus {
+  border-color: rgba(99, 102, 241, 0.8);
+}
+
+.route-form button {
+  padding: 12px 20px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 14px;
+  min-height: 44px;
+  transition:
+    transform 0.2s ease,
+    opacity 0.2s ease;
+}
+
+.route-form button:hover:not(:disabled) {
+  transform: translateY(-2px);
+}
+
+.route-form button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Recommendation result */
+
+.route-result {
+  margin-top: 10px;
+}
+
+.route-result h3 {
+  margin: 0 0 20px;
+  padding: 16px 18px;
+  border-radius: 12px;
+  background: rgba(34, 197, 94, 0.1);
+  border: 1px solid rgba(34, 197, 94, 0.25);
+  font-size: 18px;
+}
+
+/* Route cards */
+
+.route-cards {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.route-card {
+  position: relative;
+  padding: 22px;
+  border-radius: 15px;
+  background: rgba(255, 255, 255, 0.035);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  transition:
+    transform 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.route-card:hover {
+  transform: translateY(-3px);
+}
+
+.route-card.recommended-route {
+  border: 2px solid rgba(34, 197, 94, 0.65);
+  background: rgba(34, 197, 94, 0.07);
+}
+
+.route-card > strong {
+  display: inline-block;
+  margin-bottom: 12px;
+  padding: 5px 9px;
+  border-radius: 6px;
+  background: rgba(34, 197, 94, 0.15);
+  font-size: 11px;
+  letter-spacing: 0.5px;
+}
+
+.route-card h4 {
+  margin: 0 0 18px;
+  font-size: 21px;
+}
+
+.route-card p {
+  display: flex;
+  justify-content: space-between;
+  gap: 15px;
+  margin: 10px 0;
+  padding-bottom: 9px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  font-size: 14px;
+}
+
+.route-card p:last-child {
+  border-bottom: none;
+}
+
+.route-card p b {
+  text-align: right;
+}
+
+/* Responsive */
+
+@media (max-width: 900px) {
+  .route-form {
+    grid-template-columns: 1fr;
+  }
+
+  .route-cards {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .route-recommendation {
+    padding: 20px;
+  }
+
+  .route-card {
+    padding: 18px;
   }
 }

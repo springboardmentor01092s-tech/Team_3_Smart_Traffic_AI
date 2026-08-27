@@ -1,5 +1,13 @@
 import { useEffect, useState } from "react";
-import { Download, RefreshCw, FileText } from "lucide-react";
+import {
+  Download,
+  RefreshCw,
+  FileText,
+  Activity,
+  AlertTriangle,
+  MapPin,
+  Gauge,
+} from "lucide-react";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 
@@ -15,7 +23,7 @@ const RANGE_OPTIONS = [
 
 export default function Reports() {
   const [days, setDays] = useState(7);
-  const [reports, setReports] = useState([]);
+  const [reportData, setReportData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -26,11 +34,11 @@ export default function Reports() {
     try {
       const response = await api.get(`/reports/traffic-summary?days=${days}`);
 
-      setReports(response.data || []);
+      setReportData(response.data);
     } catch (err) {
       console.error("Reports fetch failed:", err);
       setError("Unable to load traffic reports.");
-      setReports([]);
+      setReportData(null);
     } finally {
       setLoading(false);
     }
@@ -42,13 +50,8 @@ export default function Reports() {
 
   const handleExport = async () => {
     try {
-      const token = localStorage.getItem("token");
-
       const response = await api.get(`/reports/export-csv?days=${days}`, {
         responseType: "blob",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
       });
 
       const url = window.URL.createObjectURL(response.data);
@@ -67,7 +70,10 @@ export default function Reports() {
       alert("Unable to download the traffic report.");
     }
   };
+
   const handleExportPDF = () => {
+    if (!reportData) return;
+
     try {
       const doc = new jsPDF();
 
@@ -78,6 +84,7 @@ export default function Reports() {
       doc.text("Traffic Summary Report", 14, 30);
 
       doc.setFontSize(10);
+
       doc.text(
         `Report Period: Last ${days} ${days === 1 ? "Day" : "Days"}`,
         14,
@@ -86,20 +93,39 @@ export default function Reports() {
 
       doc.text(`Generated: ${new Date().toLocaleString()}`, 14, 47);
 
-      const tableData = reports.map((report) => [
-        report.road_name,
-        report.readings,
-        `${report.avg_speed} km/h`,
-        report.high_congestion_count,
+      doc.text(
+        `Total Readings: ${reportData.statistics.total_readings}`,
+        14,
+        57,
+      );
+
+      doc.text(`Accidents: ${reportData.statistics.accidents}`, 14, 64);
+
+      doc.text(`Roads Covered: ${reportData.statistics.roads_covered}`, 14, 71);
+
+      doc.text(
+        `Average Speed: ${reportData.statistics.average_speed} km/h`,
+        14,
+        78,
+      );
+
+      const tableData = reportData.roads.map((road) => [
+        road.road_name,
+        road.readings,
+        `${road.avg_speed} km/h`,
+        road.high_congestion_count,
+        road.status,
       ]);
 
       autoTable(doc, {
-        startY: 55,
-        head: [["Road", "Readings", "Average Speed", "High Congestion"]],
+        startY: 88,
+        head: [
+          ["Road", "Readings", "Average Speed", "High Congestion", "Status"],
+        ],
         body: tableData,
         theme: "grid",
         styles: {
-          fontSize: 10,
+          fontSize: 9,
           cellPadding: 4,
         },
         headStyles: {
@@ -114,13 +140,19 @@ export default function Reports() {
     }
   };
 
+  const statistics = reportData?.statistics;
+  const congestion = reportData?.congestion;
+
   return (
     <Layout>
       <div className="reports-page">
         <div className="reports-header">
           <div>
             <h1>TRAFFIC REPORTS</h1>
-            <p>Historical traffic summary and congestion reports.</p>
+            <p>
+              Historical traffic summary, road performance and congestion
+              analysis.
+            </p>
           </div>
 
           <div className="reports-controls">
@@ -148,6 +180,7 @@ export default function Reports() {
               <Download size={16} />
               Export CSV
             </button>
+
             <button className="report-export-btn" onClick={handleExportPDF}>
               <FileText size={16} />
               Export PDF
@@ -155,69 +188,174 @@ export default function Reports() {
           </div>
         </div>
 
-        <div className="reports-summary-card">
-          <FileText size={28} />
-
-          <div>
-            <span>Report Period</span>
-            <strong>
-              Last {days} {days === 1 ? "Day" : "Days"}
-            </strong>
-          </div>
-        </div>
-
-        <div className="reports-panel">
-          <div className="reports-panel-title">Traffic Summary</div>
-
-          {loading ? (
+        {loading ? (
+          <div className="reports-panel">
             <div className="reports-message">Loading traffic reports...</div>
-          ) : error ? (
+          </div>
+        ) : error ? (
+          <div className="reports-panel">
             <div className="reports-error">{error}</div>
-          ) : reports.length === 0 ? (
+          </div>
+        ) : reportData ? (
+          <>
+            <div className="reports-summary-grid">
+              <div className="report-stat-card">
+                <div className="report-stat-icon">
+                  <Activity size={22} />
+                </div>
+
+                <div>
+                  <span>Total Readings</span>
+                  <strong>{statistics.total_readings}</strong>
+                </div>
+              </div>
+
+              <div className="report-stat-card">
+                <div className="report-stat-icon">
+                  <AlertTriangle size={22} />
+                </div>
+
+                <div>
+                  <span>Accidents</span>
+                  <strong>{statistics.accidents}</strong>
+                </div>
+              </div>
+
+              <div className="report-stat-card">
+                <div className="report-stat-icon">
+                  <MapPin size={22} />
+                </div>
+
+                <div>
+                  <span>Roads Covered</span>
+                  <strong>{statistics.roads_covered}</strong>
+                </div>
+              </div>
+
+              <div className="report-stat-card">
+                <div className="report-stat-icon">
+                  <Gauge size={22} />
+                </div>
+
+                <div>
+                  <span>Average Speed</span>
+                  <strong>{statistics.average_speed} km/h</strong>
+                </div>
+              </div>
+            </div>
+
+            <div className="reports-overview">
+              <div className="reports-congestion-card">
+                <div className="reports-section-heading">
+                  <div>
+                    <h2>Congestion Overview</h2>
+                    <p>Traffic condition distribution</p>
+                  </div>
+                </div>
+
+                <div className="congestion-stats">
+                  <div className="congestion-item low">
+                    <span>Low</span>
+                    <strong>{congestion.Low || 0}</strong>
+                  </div>
+
+                  <div className="congestion-item medium">
+                    <span>Medium</span>
+                    <strong>{congestion.Medium || 0}</strong>
+                  </div>
+
+                  <div className="congestion-item high">
+                    <span>High</span>
+                    <strong>{congestion.High || 0}</strong>
+                  </div>
+                </div>
+              </div>
+
+              <div className="reports-period-card">
+                <FileText size={24} />
+
+                <div>
+                  <span>Report Period</span>
+
+                  <strong>
+                    Last {days} {days === 1 ? "Day" : "Days"}
+                  </strong>
+                </div>
+              </div>
+            </div>
+
+            <div className="reports-panel">
+              <div className="reports-section-heading">
+                <div>
+                  <h2>Road Performance</h2>
+                  <p>Road-wise traffic readings and congestion status.</p>
+                </div>
+              </div>
+
+              {reportData.roads.length === 0 ? (
+                <div className="reports-message">
+                  No traffic data available for this period.
+                </div>
+              ) : (
+                <div className="reports-table-wrapper">
+                  <table className="reports-table">
+                    <thead>
+                      <tr>
+                        <th>Road</th>
+                        <th>Readings</th>
+                        <th>Average Speed</th>
+                        <th>High Congestion</th>
+                        <th>Status</th>
+                      </tr>
+                    </thead>
+
+                    <tbody>
+                      {reportData.roads.map((road) => (
+                        <tr key={road.road_name}>
+                          <td>
+                            <strong>{road.road_name}</strong>
+                          </td>
+
+                          <td>{road.readings}</td>
+
+                          <td>{road.avg_speed} km/h</td>
+
+                          <td>
+                            <span
+                              className={
+                                road.high_congestion_count > 0
+                                  ? "high-congestion"
+                                  : "normal-congestion"
+                              }
+                            >
+                              {road.high_congestion_count}
+                            </span>
+                          </td>
+
+                          <td>
+                            <span
+                              className={`road-status ${road.status
+                                .toLowerCase()
+                                .replace(" ", "-")}`}
+                            >
+                              {road.status}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          </>
+        ) : (
+          <div className="reports-panel">
             <div className="reports-message">
               No traffic data available for this period.
             </div>
-          ) : (
-            <div className="reports-table-wrapper">
-              <table className="reports-table">
-                <thead>
-                  <tr>
-                    <th>Road</th>
-                    <th>Readings</th>
-                    <th>Average Speed</th>
-                    <th>High Congestion</th>
-                  </tr>
-                </thead>
-
-                <tbody>
-                  {reports.map((report) => (
-                    <tr key={report.road_name}>
-                      <td>
-                        <strong>{report.road_name}</strong>
-                      </td>
-
-                      <td>{report.readings}</td>
-
-                      <td>{report.avg_speed} km/h</td>
-
-                      <td>
-                        <span
-                          className={
-                            report.high_congestion_count > 0
-                              ? "high-congestion"
-                              : "normal-congestion"
-                          }
-                        >
-                          {report.high_congestion_count}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </Layout>
   );
