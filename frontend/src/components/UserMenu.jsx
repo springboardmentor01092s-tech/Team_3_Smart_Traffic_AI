@@ -50,9 +50,9 @@ export default function UserMenu() {
         aria-expanded={open}
         aria-haspopup="menu"
       >
-        <UserCircle2 size={42} />
+        <UserCircle2 size={24} />
         <div><h4>{username}</h4><span>{roleLabels[role] || role}</span></div>
-        <ChevronDown size={18} className={open ? "chevron-open" : ""} />
+        <ChevronDown size={14} className={open ? "chevron-open" : ""} />
       </button>
       {open && (
         <div className="user-dropdown" role="menu">

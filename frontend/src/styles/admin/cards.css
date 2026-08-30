@@ -8,9 +8,9 @@
 
     overflow:hidden;
 
-    padding:26px;
+    padding:12px 14px;
 
-    border-radius:22px;
+    border-radius:12px;
 
     background:rgba(18,23,35,.72);
 
@@ -22,7 +22,7 @@
 
         inset 0 1px rgba(255,255,255,.05),
 
-        0 15px 45px rgba(0,0,0,.45);
+        0 12px 35px rgba(0,0,0,.45);
 
     transition:.35s;
 

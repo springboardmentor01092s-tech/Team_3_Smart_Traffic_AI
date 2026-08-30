@@ -19,7 +19,7 @@ import {
 
 import api from "../services/api";
 import Layout from "../components/admin/Layout";
-import OperatorSidebar from "../components/OperatorSidebar";
+import OperatorLayout from "../components/OperatorLayout";
 import UserMenu from "../components/UserMenu";
 import "../styles/alerts.css";
 
@@ -1066,15 +1066,9 @@ const Alerts = () => {
 
   if (userRole === "operator") {
     return (
-      <div className="operator-layout">
-        <OperatorSidebar />
-        <div
-          className="operator-dashboard operator-page-content animate-fade-in"
-          style={{ padding: "30px", width: "100%", minHeight: "100vh" }}
-        >
-          {renderAlertsContent()}
-        </div>
-      </div>
+      <OperatorLayout title="Traffic Alert Management">
+        {renderAlertsContent()}
+      </OperatorLayout>
     );
   }
 
@@ -1124,7 +1118,7 @@ const Alerts = () => {
 
       <div
         className="dashboard-container"
-        style={{ padding: "30px", maxWidth: "1200px", margin: "0 auto" }}
+        style={{ padding: "16px 20px", maxWidth: "1300px", margin: "0 auto" }}
       >
         {renderAlertsContent()}
       </div>

@@ -67,12 +67,17 @@ Particles
 }
 
 /*==================================================
-Dashboard
+/*==================================================
+Dashboard & Layout
 ==================================================*/
 
-.operator-dashboard{
+.operator-layout{
 
     min-height:100vh;
+
+    width:100%;
+
+    position:relative;
 
     background:
 
@@ -81,6 +86,38 @@ Dashboard
     radial-gradient(circle at bottom right,#00ff9520,transparent 35%),
 
     #06101f;
+
+    overflow-x:hidden;
+
+    box-sizing:border-box;
+
+}
+
+.operator-main-wrapper{
+
+    margin-left:200px;
+
+    width:calc(100% - 200px);
+
+    min-height:100vh;
+
+    display:flex;
+
+    flex-direction:column;
+
+    box-sizing:border-box;
+
+    overflow-x:hidden;
+
+}
+
+.operator-dashboard{
+
+    min-height:100vh;
+
+    width:100%;
+
+    box-sizing:border-box;
 
 }
 
@@ -102,19 +139,29 @@ Topbar
 
     align-items:center;
 
-    padding:20px 35px;
+    height:58px;
+
+    min-height:58px;
+
+    max-height:58px;
+
+    padding:0 20px;
 
     backdrop-filter:blur(25px);
 
-    background:rgba(7,18,34,.7);
+    background:rgba(7,18,34,.85);
 
     border-bottom:1px solid rgba(255,255,255,.05);
+
+    width:100%;
+
+    box-sizing:border-box;
 
 }
 
 .top-left h1{
 
-    font-size:28px;
+    font-size:22px;
 
     font-weight:600;
 
@@ -124,7 +171,7 @@ Topbar
 
     color:var(--muted);
 
-    font-size:14px;
+    font-size:12px;
 
 }
 
@@ -142,17 +189,19 @@ Topbar
 
     width:100%;
 
-    max-width:430px;
+    max-width:320px;
+
+    height:38px;
 
     display:flex;
 
     align-items:center;
 
-    gap:10px;
+    gap:8px;
 
-    padding:14px 18px;
+    padding:0 12px;
 
-    border-radius:15px;
+    border-radius:10px;
 
     background:#152440;
 
@@ -170,6 +219,8 @@ Topbar
 
     color:white;
 
+    font-size:13px;
+
 }
 
 .search-box input::placeholder{
@@ -184,7 +235,7 @@ Topbar
 
     align-items:center;
 
-    gap:18px;
+    gap:10px;
 
 }
 
@@ -194,31 +245,41 @@ Topbar
 
     align-items:center;
 
-    gap:10px;
+    gap:8px;
 
-    padding:12px 18px;
+    height:38px;
 
-    border-radius:14px;
+    padding:0 12px;
+
+    border-radius:10px;
 
     background:#13233f;
+
+    font-size:13px;
 
 }
 
 .icon-btn{
 
-    width:48px;
+    width:38px;
 
-    height:48px;
+    height:38px;
 
     border:none;
 
-    border-radius:14px;
+    border-radius:10px;
 
     cursor:pointer;
 
     color:white;
 
     background:#13233f;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
 
     transition:.35s;
 
@@ -242,9 +303,9 @@ Topbar
 
     position:absolute;
 
-    width:20px;
+    width:18px;
 
-    height:20px;
+    height:18px;
 
     border-radius:50%;
 
@@ -252,7 +313,9 @@ Topbar
 
     color:white;
 
-    font-size:11px;
+    font-size:10px;
+
+    font-weight:bold;
 
     display:flex;
 
@@ -260,9 +323,9 @@ Topbar
 
     align-items:center;
 
-    top:-6px;
+    top:-2px;
 
-    right:-5px;
+    right:-2px;
 
 }
 
@@ -272,13 +335,15 @@ Topbar
 
     align-items:center;
 
-    gap:12px;
+    gap:8px;
+
+    height:38px;
 
     background:#13233f;
 
-    padding:8px 15px;
+    padding:0 10px;
 
-    border-radius:18px;
+    border-radius:10px;
 
     cursor:pointer;
 
@@ -288,22 +353,26 @@ Topbar
 
     color:var(--muted);
 
-    font-size:13px;
+    font-size:11px;
 
 }
 
 /*==================================================
+
 Container
+
 ==================================================*/
 
 .operator-container{
 
-    padding:35px;
+    padding:16px 24px;
 
 }
 
 /*==================================================
+
 Hero
+
 ==================================================*/
 
 .hero{
@@ -314,9 +383,9 @@ Hero
 
     align-items:center;
 
-    padding:40px;
+    padding:20px 24px;
 
-    border-radius:25px;
+    border-radius:14px;
 
     position:relative;
 
@@ -332,15 +401,15 @@ Hero
 
     position:absolute;
 
-    width:320px;
+    width:220px;
 
-    height:320px;
+    height:220px;
 
     border-radius:50%;
 
-    right:-80px;
+    right:-50px;
 
-    top:-100px;
+    top:-60px;
 
     background:#00d4ff12;
 
@@ -348,19 +417,23 @@ Hero
 
 .hero h1{
 
-    font-size:40px;
+    font-size:24px;
+
+    font-weight:600;
 
 }
 
 .hero p{
 
-    margin-top:18px;
+    margin-top:8px;
 
     color:var(--muted);
 
-    max-width:620px;
+    font-size:13px;
 
-    line-height:1.8;
+    max-width:550px;
+
+    line-height:1.5;
 
 }
 
@@ -368,19 +441,21 @@ Hero
 
     display:flex;
 
-    gap:18px;
+    gap:12px;
 
-    margin-top:30px;
+    margin-top:16px;
 
 }
 
 .hero-buttons button{
 
-    padding:15px 24px;
+    padding:8px 16px;
+
+    height:38px;
 
     border:none;
 
-    border-radius:14px;
+    border-radius:10px;
 
     cursor:pointer;
 
@@ -388,11 +463,13 @@ Hero
 
     align-items:center;
 
-    gap:10px;
+    gap:8px;
 
     background:var(--primary);
 
     color:#07111f;
+
+    font-size:13px;
 
     font-weight:600;
 
@@ -1494,6 +1571,14 @@ Responsive
 
 .operator-page-content{
 
-    margin-left:285px;
+    flex:1;
+
+    padding:16px 20px;
+
+    box-sizing:border-box;
+
+    width:100%;
+
+    min-width:0;
 
 }

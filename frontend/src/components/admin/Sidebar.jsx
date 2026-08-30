@@ -17,12 +17,12 @@ import { useState } from "react";
 import "../../styles/admin/sidebar.css";
 
 const adminMenuItems = [
-    { title: "Dashboard", icon: <LayoutDashboard size={22} />, path: "/admin" },
-    { title: "Live Traffic", icon: <Map size={22} />, path: "/admin/live-traffic" },
-    { title: "Prediction", icon: <BrainCircuit size={22} />, path: "/admin/prediction" },
-    { title: "Alerts", icon: <TriangleAlert size={22} />, path: "/admin/alerts" },
-    { title: "Analytics", icon: <BarChart3 size={22} />, path: "/admin/analytics" },
-    { title: "Reports", icon: <FileText size={22} />, path: "/admin/reports" }
+    { title: "Dashboard", icon: <LayoutDashboard size={18} />, path: "/admin" },
+    { title: "Live Traffic", icon: <Map size={18} />, path: "/admin/live-traffic" },
+    { title: "Prediction", icon: <BrainCircuit size={18} />, path: "/admin/prediction" },
+    { title: "Alerts", icon: <TriangleAlert size={18} />, path: "/admin/alerts" },
+    { title: "Analytics", icon: <BarChart3 size={18} />, path: "/admin/analytics" },
+    { title: "Reports", icon: <FileText size={18} />, path: "/admin/reports" }
 ];
 
 export default function Sidebar({
@@ -39,7 +39,7 @@ export default function Sidebar({
             className={`sidebar ${collapsed ? "collapsed" : ""}`}
 
             animate={{
-                width: collapsed ? 90 : 285
+                width: collapsed ? 68 : 200
             }}
 
             transition={{
@@ -54,7 +54,7 @@ export default function Sidebar({
 
                     <div className="logo-circle">
 
-                        <TrafficCone />
+                        <TrafficCone size={18} />
 
                     </div>
 
@@ -63,13 +63,13 @@ export default function Sidebar({
                         <motion.div
 
                             initial={{
-                                opacity:0,
-                                x:-15
+                                opacity: 0,
+                                x: -15
                             }}
 
                             animate={{
-                                opacity:1,
-                                x:0
+                                opacity: 1,
+                                x: 0
                             }}
 
                             className="logo-text"
@@ -100,13 +100,13 @@ export default function Sidebar({
 
                         collapsed
 
-                        ?
+                            ?
 
-                        <ChevronRight size={20}/>
+                            <ChevronRight size={16} />
 
-                        :
+                            :
 
-                        <ChevronLeft size={20}/>
+                            <ChevronLeft size={16} />
 
                     }
 
@@ -116,7 +116,7 @@ export default function Sidebar({
 
             <div className="system-status">
 
-                <div className="pulse"/>
+                <div className="pulse" />
 
                 {
 
@@ -138,7 +138,7 @@ export default function Sidebar({
 
                 {
 
-                    menuItems.map((item,index)=>(
+                    menuItems.map((item, index) => (
 
                         <NavLink
 
@@ -146,17 +146,17 @@ export default function Sidebar({
 
                             to={item.path}
 
-                            className={({isActive})=>
+                            className={({ isActive }) =>
 
                                 isActive && !item.path.includes("#")
 
-                                ?
+                                    ?
 
-                                "menu-item active"
+                                    "menu-item active"
 
-                                :
+                                    :
 
-                                "menu-item"
+                                    "menu-item"
 
                             }
 
@@ -166,9 +166,9 @@ export default function Sidebar({
 
                                 whileHover={{
 
-                                    scale:1.08,
+                                    scale: 1.08,
 
-                                    rotate:-5
+                                    rotate: -5
 
                                 }}
 
@@ -242,7 +242,7 @@ export default function Sidebar({
 
                 >
 
-                    <LogOut size={20}/>
+                    <LogOut size={16} />
 
                     {
 

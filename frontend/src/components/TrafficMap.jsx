@@ -99,14 +99,22 @@ function TrafficMarkers({ liveData = [] }) {
   );
 }
 
-export default function TrafficMap({ liveData = [] }) {
+const DEFAULT_MAP_DATA = [
+  { road_name: "NH-24", average_speed: 45, congestion_level: "Medium" },
+  { road_name: "Ring Road", average_speed: 28, congestion_level: "High" },
+  { road_name: "MG Road", average_speed: 62, congestion_level: "Low" },
+  { road_name: "Outer Ring Road", average_speed: 52, congestion_level: "Low" }
+];
+
+export default function TrafficMap({ liveData = [], height = "280px" }) {
   const apiKey = process.env.REACT_APP_GOOGLE_MAPS_API_KEY;
+  const activeData = Array.isArray(liveData) && liveData.length > 0 ? liveData : DEFAULT_MAP_DATA;
 
   if (!apiKey) {
     return (
       <div
         style={{
-          height: "400px",
+          height: height,
           width: "100%",
           display: "flex",
           alignItems: "center",
@@ -125,10 +133,12 @@ export default function TrafficMap({ liveData = [] }) {
     <APIProvider apiKey={apiKey}>
       <div
         style={{
-          height: "520px",
+          height: height,
+          minHeight: "260px",
           width: "100%",
           borderRadius: "12px",
           overflow: "hidden",
+          position: "relative"
         }}
       >
         <Map
@@ -139,7 +149,7 @@ export default function TrafficMap({ liveData = [] }) {
           disableDefaultUI={false}
         >
           <TrafficLayer />
-          <TrafficMarkers liveData={liveData} />
+          <TrafficMarkers liveData={activeData} />
         </Map>
       </div>
     </APIProvider>

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import api from "../services/api";
 import Layout from "../components/admin/Layout";
-import OperatorSidebar from "../components/OperatorSidebar";
+import OperatorLayout from "../components/OperatorLayout";
 import "../styles/prediction.css";
 
 const DAYS = [
@@ -356,15 +356,9 @@ export default function Prediction() {
 
   if (userRole === "operator") {
     return (
-      <div className="operator-layout">
-        <OperatorSidebar />
-        <div
-          className="operator-dashboard operator-page-content animate-fade-in"
-          style={{ padding: "30px", width: "100%", minHeight: "100vh" }}
-        >
-          <PredictionContent />
-        </div>
-      </div>
+      <OperatorLayout title="AI Traffic Prediction Center">
+        <PredictionContent />
+      </OperatorLayout>
     );
   }
 

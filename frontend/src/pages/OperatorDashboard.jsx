@@ -6,30 +6,25 @@ import Particles from "@tsparticles/react";
 import { loadSlim } from "@tsparticles/slim";
 
 import {
-
     Activity,
     AlertTriangle,
     Bell,
     Camera,
     Car,
-    Clock3,
     Cpu,
     Map,
     Navigation,
     Radar,
-    Search,
     Shield,
     Signal,
     Sun,
     TrendingUp,
     Wifi,
     Zap
-
 } from "lucide-react";
 
 import "../styles/operatorDashboard.css";
-import OperatorSidebar from "../components/OperatorSidebar";
-import UserMenu from "../components/UserMenu";
+import OperatorLayout from "../components/OperatorLayout";
 
 const stats = [
 
@@ -110,38 +105,6 @@ const incidents=[
 export default function OperatorDashboard(){
 
     const navigate = useNavigate();
-    const rawUsername = localStorage.getItem("username") || "Operator";
-    const username = rawUsername.replace(/\s*\([^)]*\)/g, "").trim();
-
-    const [time,setTime]=useState("");
-
-    useEffect(()=>{
-
-        const updateClock=()=>{
-
-            const now=new Date();
-
-            setTime(
-
-                now.toLocaleTimeString([],{
-
-                    hour:"2-digit",
-                    minute:"2-digit",
-                    second:"2-digit"
-
-                })
-
-            );
-
-        };
-
-        updateClock();
-
-        const timer=setInterval(updateClock,1000);
-
-        return ()=>clearInterval(timer);
-
-    },[]);
 
     const particlesInit=async(engine)=>{
 
@@ -151,11 +114,7 @@ export default function OperatorDashboard(){
 
     return(
 
-        <div className="operator-layout">
-
-            <OperatorSidebar />
-
-            <div className="operator-dashboard operator-page-content">
+        <OperatorLayout title="AI Traffic Operations Center">
 
             <Particles
 
@@ -205,88 +164,6 @@ export default function OperatorDashboard(){
                 }}
 
             />
-
-            {/* TOPBAR */}
-
-            <motion.header
-
-                className="operator-topbar"
-
-                initial={{
-
-                    opacity:0,
-                    y:-30
-
-                }}
-
-                animate={{
-
-                    opacity:1,
-                    y:0
-
-                }}
-
-            >
-
-                <div className="top-left">
-
-                    <h1>
-
-                        AI Traffic Operations Center
-
-                    </h1>
-
-                    <span>
-
-                        Welcome back, {username}
-
-                    </span>
-
-                </div>
-
-                <div className="top-middle">
-
-                    <div className="search-box">
-
-                        <Search size={18}/>
-
-                        <input
-
-                            placeholder="Search cameras, roads..."
-
-                        />
-
-                    </div>
-
-                </div>
-
-                <div className="top-right">
-
-                    <div className="clock">
-
-                        <Clock3 size={18}/>
-
-                        {time}
-
-                    </div>
-
-                    <button className="icon-btn notification">
-
-                        <Bell size={20}/>
-
-                        <span className="badge">
-
-                            5
-
-                        </span>
-
-                    </button>
-
-                    <UserMenu />
-
-                </div>
-
-            </motion.header>
 
             <div className="operator-container">
 
@@ -1219,9 +1096,7 @@ export default function OperatorDashboard(){
 
             </div>
 
-            </div>
-
-        </div>
+        </OperatorLayout>
 
     );
 
