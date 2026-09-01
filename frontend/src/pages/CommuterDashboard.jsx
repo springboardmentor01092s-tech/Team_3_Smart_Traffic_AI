@@ -1,23 +1,23 @@
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 
 import {
-    Search,
-    Bell,
-    Clock3,
-    MapPinned,
-    Route,
-    Car,
-    Navigation,
-    CloudSun,
-    AlertTriangle,
-    TrendingUp,
-    Heart,
-    Sparkles,
-    ArrowRight,
-    Bus,
-    ShieldCheck
+  Search,
+  Bell,
+  Clock3,
+  MapPinned,
+  Route,
+  Car,
+  Navigation,
+  CloudSun,
+  AlertTriangle,
+  TrendingUp,
+  Heart,
+  Sparkles,
+  ArrowRight,
+  Bus,
+  ShieldCheck,
 } from "lucide-react";
 
 import "../styles/commuterDashboard.css";
@@ -84,1141 +84,805 @@ const alerts = [
 ];
 
 export default function CommuterDashboard() {
-    const rawUsername = localStorage.getItem("username") || "Commuter";
-    const username = rawUsername.replace(/\s*\([^)]*\)/g, "").trim();
+  const navigate = useNavigate();
 
-const [time, setTime] = useState("");
+  const rawUsername = localStorage.getItem("username") || "Commuter";
 
-useEffect(() => {
+  const username = rawUsername.replace(/\s*\([^)]*\)/g, "").trim();
 
+  const [time, setTime] = useState("");
+
+  // AI recommendation state
+  const [recommendation, setRecommendation] = useState(null);
+  const [loadingRecommendation, setLoadingRecommendation] = useState(false);
+  const [recommendationError, setRecommendationError] = useState("");
+
+  // Clock
+  useEffect(() => {
     const updateClock = () => {
+      const now = new Date();
 
-        const now = new Date();
-
-        setTime(
-
-            now.toLocaleTimeString([],{
-
-                hour:"2-digit",
-                minute:"2-digit",
-                second:"2-digit"
-
-            })
-
-        );
-
+      setTime(
+        now.toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+        }),
+      );
     };
 
     updateClock();
 
-    const timer = setInterval(updateClock,1000);
+    const timer = setInterval(updateClock, 1000);
 
-    return ()=>clearInterval(timer);
+    return () => clearInterval(timer);
+  }, []);
 
-},[]);
+  // Get AI route recommendation
+  const getAIRecommendation = async () => {
+    setLoadingRecommendation(true);
+    setRecommendationError("");
+
+    try {
+      const token = localStorage.getItem("token");
+
+      const response = await fetch(
+        "http://127.0.0.1:8000/routes/recommend?origin=Delhi&destination=Noida",
+        {
+          method: "GET",
+          headers: {
+            Accept: "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.detail || "Unable to get AI recommendation");
+      }
+
+      setRecommendation(data);
+    } catch (error) {
+      console.error("AI recommendation error:", error);
+      setRecommendationError(error.message);
+    } finally {
+      setLoadingRecommendation(false);
+    }
+  };
+
+  // Load recommendation when commuter dashboard opens
+  useEffect(() => {
+    getAIRecommendation();
+  }, []);
+
+  // Find recommended route
+  const recommendedRoute = recommendation?.routes?.find(
+    (route) => route.recommended,
+  );
+
   return (
     <div className="commuter-dashboard">
+      {/* TOP BAR */}
 
       <motion.header
+        className="commuter-topbar"
+        initial={{
+          opacity: 0,
+          y: -30,
+        }}
+        animate={{
+          opacity: 1,
+          y: 0,
+        }}
+        transition={{
+          duration: 0.6,
+        }}
+      >
+        <div className="top-left">
+          <div>
+            <h1>AI Traffic Assistant</h1>
 
-    className="commuter-topbar"
-
-    initial={{
-        opacity:0,
-        y:-30
-    }}
-
-    animate={{
-        opacity:1,
-        y:0
-    }}
-
-    transition={{
-        duration:.6
-    }}
-
->
-
-    <div className="top-left">
-
-        <div>
-
-            <h1>
-
-                AI Traffic Assistant
-
-            </h1>
-
-            <span>
-
-                Welcome back, {username}
-
-            </span>
-
+            <span>Welcome back, {username}</span>
+          </div>
         </div>
 
-    </div>
+        <div className="top-middle">
+          <div className="search-box">
+            <Search size={18} />
 
-    <div className="top-middle">
-
-        <div className="search-box">
-
-            <Search size={18}/>
-
-            <input
-
-                type="text"
-
-                placeholder="Search destination..."
-
-            />
-
+            <input type="text" placeholder="Search destination..." />
+          </div>
         </div>
 
-    </div>
-
-    <div className="top-right">
-
-        <motion.div
-
+        <div className="top-right">
+          <motion.div
             whileHover={{
-                scale:1.05
+              scale: 1.05,
             }}
-
             className="clock"
+          >
+            <Clock3 size={18} />
 
-        >
+            <span>{time}</span>
+          </motion.div>
 
-            <Clock3 size={18}/>
-
-            <span>
-
-                {time}
-
-            </span>
-
-        </motion.div>
-
-        <motion.button
-
+          <motion.button
             whileHover={{
-                scale:1.08
+              scale: 1.08,
             }}
-
             className="icon-btn notification"
+          >
+            <Bell size={20} />
 
-        >
+            <span className="badge">3</span>
+          </motion.button>
 
-            <Bell size={20}/>
+          <UserMenu />
+        </div>
+      </motion.header>
 
-            <span className="badge">
-
-                3
-
-            </span>
-
-        </motion.button>
-
-        <UserMenu />
-
-    </div>
-
-</motion.header>
+      {/* NAVIGATION */}
 
       <nav className="commuter-nav" aria-label="Commuter navigation">
-        <NavLink to="/commuter" end>Home</NavLink>
+        <NavLink to="/commuter" end>
+          Home
+        </NavLink>
+
         <NavLink to="/live-map">Live Traffic</NavLink>
+
         <NavLink to="/prediction">Prediction</NavLink>
+
         <a href="/commuter#routes">Routes</a>
+
         <NavLink to="/alerts">Alerts</NavLink>
+
         <a href="/commuter#profile">Profile</a>
       </nav>
 
       <div className="dashboard-container">
-
-        {/* Hero */}
+        {/* HERO */}
 
         <motion.div
           className="hero-card"
-          initial={{ opacity: 0, y: 35 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: .7 }}
+          initial={{
+            opacity: 0,
+            y: 35,
+          }}
+          animate={{
+            opacity: 1,
+            y: 0,
+          }}
+          transition={{
+            duration: 0.7,
+          }}
         >
-
           <div>
-
-            <h1>
-
-              AI Smart Travel Assistant
-
-            </h1>
+            <h1>AI Smart Travel Assistant</h1>
 
             <p>
-
-              Your personalized commuting dashboard powered by AI.
-              Receive smarter route suggestions, weather alerts,
-              congestion analysis and estimated arrival times.
-
+              Your personalized commuting dashboard powered by AI. Receive
+              smarter route suggestions, weather alerts, congestion analysis and
+              estimated arrival times.
             </p>
 
             <div className="hero-buttons">
-
-              <button>
-
+              <button onClick={() => navigate("/live-map")}>
                 <Navigation size={18} />
-
                 Start Navigation
-
               </button>
 
-              <button className="secondary">
-
+              <button
+                className="secondary"
+                onClick={() => navigate("/live-map")}
+              >
                 <MapPinned size={18} />
-
                 View Live Map
-
               </button>
-
             </div>
-
           </div>
 
           <motion.div
-
             className="hero-circle"
-
             animate={{
-              rotate:360
+              rotate: 360,
             }}
-
             transition={{
-              duration:25,
-              repeat:Infinity,
-              ease:"linear"
+              duration: 25,
+              repeat: Infinity,
+              ease: "linear",
             }}
-
           >
-
-            <Sparkles size={120}/>
-
+            <Sparkles size={120} />
           </motion.div>
-
         </motion.div>
 
-        {/* Stats */}
+        {/* STATS */}
 
         <div className="stats-grid">
-
-          {stats.map((item,index)=>(
-
+          {stats.map((item, index) => (
             <motion.div
-
               className="stat-card"
-
               key={index}
-
               initial={{
-                opacity:0,
-                y:40
+                opacity: 0,
+                y: 40,
               }}
-
               animate={{
-                opacity:1,
-                y:0
+                opacity: 1,
+                y: 0,
               }}
-
               transition={{
-                delay:index*.12
+                delay: index * 0.12,
               }}
-
               whileHover={{
-                y:-8,
-                scale:1.03
+                y: -8,
+                scale: 1.03,
               }}
-
             >
-
               <div
-
                 className="icon"
-
                 style={{
-                  color:item.color
+                  color: item.color,
                 }}
-
               >
-
                 {item.icon}
-
               </div>
 
               <div>
+                <h2>{item.value}</h2>
 
-                <h2>
-
-                  {item.value}
-
-                </h2>
-
-                <span>
-
-                  {item.title}
-
-                </span>
-
+                <span>{item.title}</span>
               </div>
-
             </motion.div>
-
           ))}
-
         </div>
 
-        {/* Quick Destinations */}
+        {/* QUICK DESTINATIONS */}
 
         <motion.div
-
           className="section"
-
           initial={{
-            opacity:0
+            opacity: 0,
           }}
-
           whileInView={{
-            opacity:1
+            opacity: 1,
           }}
-
         >
-
-          <h2>
-
-            Quick Destinations
-
-          </h2>
+          <h2>Quick Destinations</h2>
 
           <div className="destination-grid">
-
-            {destinations.map((place,index)=>(
-
+            {destinations.map((place, index) => (
               <motion.div
-
                 key={index}
-
                 whileHover={{
-                  scale:1.05
+                  scale: 1.05,
                 }}
-
                 className="destination-card"
-
               >
-
                 <div
-
                   className="traffic-dot"
-
                   style={{
-                    background:place.color
+                    background: place.color,
                   }}
-
                 />
 
-                <h3>
+                <h3>{place.name}</h3>
 
-                  {place.name}
+                <p>ETA : {place.eta}</p>
 
-                </h3>
+                <span>Traffic : {place.traffic}</span>
 
-                <p>
-
-                  ETA : {place.eta}
-
-                </p>
-
-                <span>
-
-                  Traffic : {place.traffic}
-
-                </span>
-
-                <button>
-
+                <button onClick={() => navigate("/prediction")}>
                   Navigate
-
-                  <ArrowRight size={16}/>
-
+                  <ArrowRight size={16} />
                 </button>
-
               </motion.div>
-
             ))}
-
           </div>
-
         </motion.div>
-                {/* AI Route + Weather */}
+
+        {/* AI ROUTE + WEATHER */}
 
         <div className="two-column-grid">
+          {/* AI ROUTE RECOMMENDATION */}
 
           <motion.div
             className="ai-card"
-            initial={{ opacity:0, x:-40 }}
-            whileInView={{ opacity:1, x:0 }}
-            transition={{ duration:.6 }}
-            whileHover={{ y:-5 }}
+            initial={{
+              opacity: 0,
+              x: -40,
+            }}
+            whileInView={{
+              opacity: 1,
+              x: 0,
+            }}
+            transition={{
+              duration: 0.6,
+            }}
+            whileHover={{
+              y: -5,
+            }}
           >
-
             <div className="card-header">
-
-              <Sparkles size={22}/>
+              <Sparkles size={22} />
 
               <h2>AI Route Recommendation</h2>
-
             </div>
 
             <div className="route-box">
-
               <div className="route">
-
-                <Navigation size={20}/>
+                <Navigation size={20} />
 
                 <div>
+                  <h3>
+                    {recommendation
+                      ? `${recommendation.origin} → ${recommendation.destination}`
+                      : "AI Route Recommendation"}
+                  </h3>
 
-                  <h3>MKCE → Karur Bus Stand</h3>
-
-                  <span>Fastest Route</span>
-
+                  <span>
+                    {recommendation
+                      ? `Recommended Route: ${recommendation.recommendation}`
+                      : loadingRecommendation
+                        ? "Analyzing traffic..."
+                        : "No recommendation available"}
+                  </span>
                 </div>
-
               </div>
+
+              {/* ROUTE DETAILS */}
 
               <div className="route-details">
-
                 <div>
-
                   <h4>ETA</h4>
 
-                  <span>14 mins</span>
-
+                  <span>
+                    {recommendedRoute
+                      ? `${recommendedRoute.estimated_travel_time_minutes} mins`
+                      : "--"}
+                  </span>
                 </div>
 
                 <div>
-
                   <h4>Traffic</h4>
 
-                  <span className="green">Low</span>
-
+                  <span
+                    className={
+                      recommendedRoute?.congestion_level === "Low"
+                        ? "green"
+                        : recommendedRoute?.congestion_level === "Medium"
+                          ? "orange"
+                          : ""
+                    }
+                  >
+                    {recommendedRoute
+                      ? recommendedRoute.congestion_level
+                      : "--"}
+                  </span>
                 </div>
 
                 <div>
-
                   <h4>Distance</h4>
 
-                  <span>9.6 km</span>
-
+                  <span>
+                    {recommendedRoute
+                      ? `${recommendedRoute.distance_km} km`
+                      : "--"}
+                  </span>
                 </div>
-
               </div>
+
+              {/* AI MESSAGE */}
 
               <div className="ai-message">
+                {loadingRecommendation && (
+                  <span>AI is analyzing current traffic conditions...</span>
+                )}
 
-                AI detected smooth traffic flow on NH44.
-                Choosing this route saves approximately
-                <strong> 8 minutes </strong>
-                compared to your regular route.
+                {recommendationError && <span>{recommendationError}</span>}
 
+                {recommendation &&
+                  !loadingRecommendation &&
+                  !recommendationError && (
+                    <>
+                      AI recommends{" "}
+                      <strong>{recommendation.recommendation}</strong> based on
+                      current traffic conditions. The estimated travel time is{" "}
+                      <strong>
+                        {recommendedRoute?.estimated_travel_time_minutes}{" "}
+                        minutes
+                      </strong>
+                      .
+                    </>
+                  )}
               </div>
 
-              <button>
+              {/* NAVIGATION BUTTON */}
 
+              <button
+                onClick={() => navigate("/live-map")}
+                disabled={!recommendation}
+              >
                 Start AI Navigation
-
               </button>
-
             </div>
-
           </motion.div>
 
-
+          {/* WEATHER */}
 
           <motion.div
-
             className="weather-card"
-
-            initial={{ opacity:0, x:40 }}
-
-            whileInView={{ opacity:1, x:0 }}
-
-            transition={{ duration:.6 }}
-
-            whileHover={{ y:-5 }}
-
+            initial={{
+              opacity: 0,
+              x: 40,
+            }}
+            whileInView={{
+              opacity: 1,
+              x: 0,
+            }}
+            transition={{
+              duration: 0.6,
+            }}
+            whileHover={{
+              y: -5,
+            }}
           >
-
             <div className="card-header">
+              <CloudSun size={24} />
 
-              <CloudSun size={24}/>
-
-              <h2>
-
-                Weather
-
-              </h2>
-
+              <h2>Weather</h2>
             </div>
 
             <div className="weather-main">
-
-              <CloudSun size={70}/>
+              <CloudSun size={70} />
 
               <div>
+                <h1>29°C</h1>
 
-                <h1>
-
-                  29°C
-
-                </h1>
-
-                <span>
-
-                  Partly Cloudy
-
-                </span>
-
+                <span>Partly Cloudy</span>
               </div>
-
             </div>
 
             <div className="weather-grid">
-
               <div>
+                <h4>Humidity</h4>
 
-                <h4>
-
-                  Humidity
-
-                </h4>
-
-                <span>
-
-                  74%
-
-                </span>
-
+                <span>74%</span>
               </div>
 
               <div>
+                <h4>Wind</h4>
 
-                <h4>
-
-                  Wind
-
-                </h4>
-
-                <span>
-
-                  14 km/h
-
-                </span>
-
+                <span>14 km/h</span>
               </div>
 
               <div>
+                <h4>Visibility</h4>
 
-                <h4>
-
-                  Visibility
-
-                </h4>
-
-                <span>
-
-                  8 km
-
-                </span>
-
+                <span>8 km</span>
               </div>
 
               <div>
+                <h4>UV</h4>
 
-                <h4>
-
-                  UV
-
-                </h4>
-
-                <span>
-
-                  Moderate
-
-                </span>
-
+                <span>Moderate</span>
               </div>
-
             </div>
-
           </motion.div>
-
         </div>
 
-
-
-        {/* Alerts */}
-
-
+        {/* ALERTS */}
 
         <motion.div
-
           className="section"
-
-          initial={{ opacity:0 }}
-
-          whileInView={{ opacity:1 }}
-
+          initial={{
+            opacity: 0,
+          }}
+          whileInView={{
+            opacity: 1,
+          }}
         >
-
-          <h2>
-
-            Live Traffic Alerts
-
-          </h2>
+          <h2>Live Traffic Alerts</h2>
 
           <div className="alert-list">
-
-            {alerts.map((alert,index)=>(
-
+            {alerts.map((alert, index) => (
               <motion.div
-
                 key={index}
-
                 className="alert-card"
-
-                whileHover={{ scale:1.02 }}
-
+                whileHover={{
+                  scale: 1.02,
+                }}
               >
+                <AlertTriangle size={22} />
 
-                <AlertTriangle size={22}/>
-
-                <span>
-
-                  {alert}
-
-                </span>
-
+                <span>{alert}</span>
               </motion.div>
-
             ))}
-
           </div>
-
         </motion.div>
 
-
-
-        {/* Weekly Analytics */}
-
-
+        {/* WEEKLY ANALYTICS */}
 
         <motion.div
-
           className="analytics-card"
-
-          initial={{ opacity:0,y:40 }}
-
-          whileInView={{ opacity:1,y:0 }}
-
+          initial={{
+            opacity: 0,
+            y: 40,
+          }}
+          whileInView={{
+            opacity: 1,
+            y: 0,
+          }}
         >
-
           <div className="card-header">
+            <TrendingUp size={22} />
 
-            <TrendingUp size={22}/>
-
-            <h2>
-
-              Weekly Travel Summary
-
-            </h2>
-
+            <h2>Weekly Travel Summary</h2>
           </div>
 
           <div className="analytics-grid">
-
             <div>
+              <h1>168 km</h1>
 
-              <h1>
-
-                168 km
-
-              </h1>
-
-              <span>
-
-                Total Distance
-
-              </span>
-
+              <span>Total Distance</span>
             </div>
 
             <div>
+              <h1>12 hrs</h1>
 
-              <h1>
-
-                12 hrs
-
-              </h1>
-
-              <span>
-
-                Travel Time
-
-              </span>
-
+              <span>Travel Time</span>
             </div>
 
             <div>
+              <h1>91%</h1>
 
-              <h1>
-
-                91%
-
-              </h1>
-
-              <span>
-
-                On-Time Arrivals
-
-              </span>
-
+              <span>On-Time Arrivals</span>
             </div>
 
             <div>
+              <h1>24</h1>
 
-              <h1>
-
-                24
-
-              </h1>
-
-              <span>
-
-                Trips Completed
-
-              </span>
-
+              <span>Trips Completed</span>
             </div>
-
           </div>
-
         </motion.div>
-        
-        {/* Bottom Grid */}
+
+        {/* BOTTOM GRID */}
 
         <div className="bottom-grid">
-
-          {/* Favorite Routes */}
+          {/* FAVORITE ROUTES */}
 
           <motion.div
             className="favorites-card"
-            initial={{ opacity:0, y:40 }}
-            whileInView={{ opacity:1, y:0 }}
-            whileHover={{ y:-5 }}
+            initial={{
+              opacity: 0,
+              y: 40,
+            }}
+            whileInView={{
+              opacity: 1,
+              y: 0,
+            }}
+            whileHover={{
+              y: -5,
+            }}
           >
-
             <div className="card-header">
+              <Heart size={22} />
 
-              <Heart size={22}/>
-
-              <h2>
-
-                Favorite Routes
-
-              </h2>
-
+              <h2>Favorite Routes</h2>
             </div>
 
             <div className="favorite-item">
-
               <div>
+                <h3>Home → College</h3>
 
-                <h3>
-
-                  Home → College
-
-                </h3>
-
-                <span>
-
-                  12 km • 16 mins
-
-                </span>
-
+                <span>12 km • 16 mins</span>
               </div>
 
-              <button>
-
-                Go
-
-              </button>
-
+              <button>Go</button>
             </div>
 
             <div className="favorite-item">
-
               <div>
+                <h3>College → Bus Stand</h3>
 
-                <h3>
-
-                  College → Bus Stand
-
-                </h3>
-
-                <span>
-
-                  8 km • 11 mins
-
-                </span>
-
+                <span>8 km • 11 mins</span>
               </div>
 
-              <button>
-
-                Go
-
-              </button>
-
+              <button>Go</button>
             </div>
 
             <div className="favorite-item">
-
               <div>
+                <h3>Home → Airport</h3>
 
-                <h3>
-
-                  Home → Airport
-
-                </h3>
-
-                <span>
-
-                  56 km • 54 mins
-
-                </span>
-
+                <span>56 km • 54 mins</span>
               </div>
 
-              <button>
-
-                Go
-
-              </button>
-
+              <button>Go</button>
             </div>
-
           </motion.div>
 
-
-
-
-
-          {/* Public Transport */}
+          {/* PUBLIC TRANSPORT */}
 
           <motion.div
-
             className="transport-card"
-
-            initial={{ opacity:0,y:40 }}
-
-            whileInView={{ opacity:1,y:0 }}
-
-            whileHover={{ y:-5 }}
-
+            initial={{
+              opacity: 0,
+              y: 40,
+            }}
+            whileInView={{
+              opacity: 1,
+              y: 0,
+            }}
+            whileHover={{
+              y: -5,
+            }}
           >
-
             <div className="card-header">
+              <Bus size={22} />
 
-              <Bus size={22}/>
-
-              <h2>
-
-                Public Transport
-
-              </h2>
-
+              <h2>Public Transport</h2>
             </div>
 
             <div className="transport-item">
-
-              <Bus size={18}/>
+              <Bus size={18} />
 
               <div>
+                <h3>Bus 21A</h3>
 
-                <h3>
-
-                  Bus 21A
-
-                </h3>
-
-                <span>
-
-                  Arriving in 4 mins
-
-                </span>
-
+                <span>Arriving in 4 mins</span>
               </div>
-
             </div>
 
             <div className="transport-item">
-
-              <Bus size={18}/>
+              <Bus size={18} />
 
               <div>
+                <h3>Bus 47C</h3>
 
-                <h3>
-
-                  Bus 47C
-
-                </h3>
-
-                <span>
-
-                  Arriving in 9 mins
-
-                </span>
-
+                <span>Arriving in 9 mins</span>
               </div>
-
             </div>
 
             <div className="transport-item">
-
-              <Bus size={18}/>
+              <Bus size={18} />
 
               <div>
+                <h3>Metro Line 2</h3>
 
-                <h3>
-
-                  Metro Line 2
-
-                </h3>
-
-                <span>
-
-                  Delayed by 6 mins
-
-                </span>
-
+                <span>Delayed by 6 mins</span>
               </div>
-
             </div>
-
           </motion.div>
 
-
-
-
-
-          {/* Recent Trips */}
+          {/* RECENT TRIPS */}
 
           <motion.div
-
             className="recent-card"
-
-            initial={{ opacity:0,y:40 }}
-
-            whileInView={{ opacity:1,y:0 }}
-
-            whileHover={{ y:-5 }}
-
+            initial={{
+              opacity: 0,
+              y: 40,
+            }}
+            whileInView={{
+              opacity: 1,
+              y: 0,
+            }}
+            whileHover={{
+              y: -5,
+            }}
           >
-
             <div className="card-header">
+              <Clock3 size={22} />
 
-              <Clock3 size={22}/>
-
-              <h2>
-
-                Recent Trips
-
-              </h2>
-
+              <h2>Recent Trips</h2>
             </div>
 
             <table>
-
               <thead>
-
                 <tr>
-
                   <th>Route</th>
 
                   <th>Time</th>
 
                   <th>Status</th>
-
                 </tr>
-
               </thead>
 
               <tbody>
-
                 <tr>
-
                   <td>Home → College</td>
 
                   <td>08:15 AM</td>
 
-                  <td className="green">
-
-                    Completed
-
-                  </td>
-
+                  <td className="green">Completed</td>
                 </tr>
 
                 <tr>
-
                   <td>College → Bus Stand</td>
 
                   <td>02:10 PM</td>
 
-                  <td className="green">
-
-                    Completed
-
-                  </td>
-
+                  <td className="green">Completed</td>
                 </tr>
 
                 <tr>
-
                   <td>Bus Stand → Home</td>
 
                   <td>06:40 PM</td>
 
-                  <td className="orange">
-
-                    Scheduled
-
-                  </td>
-
+                  <td className="orange">Scheduled</td>
                 </tr>
-
               </tbody>
-
             </table>
-
           </motion.div>
-
         </div>
 
-
-
-
-
-        {/* Quick Actions */}
+        {/* QUICK ACTIONS */}
 
         <motion.div
-
           className="quick-actions"
-
-          initial={{ opacity:0 }}
-
-          whileInView={{ opacity:1 }}
-
+          initial={{
+            opacity: 0,
+          }}
+          whileInView={{
+            opacity: 1,
+          }}
         >
-
-          <h2>
-
-            Quick Actions
-
-          </h2>
+          <h2>Quick Actions</h2>
 
           <div className="action-grid">
-
-            <button>
-
-              <Navigation size={22}/>
-
+            <button onClick={() => navigate("/prediction")}>
+              <Navigation size={22} />
               Navigate
-
             </button>
 
-            <button>
-
-              <Bell size={22}/>
-
+            <button onClick={() => navigate("/alerts")}>
+              <Bell size={22} />
               Alerts
-
             </button>
 
-            <button>
-
-              <Route size={22}/>
-
+            <button onClick={() => navigate("/prediction")}>
+              <Route size={22} />
               My Routes
-
             </button>
 
-            <button>
-
-              <MapPinned size={22}/>
-
+            <button onClick={() => navigate("/live-map")}>
+              <MapPinned size={22} />
               Live Map
-
             </button>
-
           </div>
-
         </motion.div>
 
-
-
-
-
-        {/* Safety Card */}
+        {/* SAFETY CARD */}
 
         <motion.div
-
           className="safety-card"
-
-          initial={{ opacity:0,y:40 }}
-
-          whileInView={{ opacity:1,y:0 }}
-
+          initial={{
+            opacity: 0,
+            y: 40,
+          }}
+          whileInView={{
+            opacity: 1,
+            y: 0,
+          }}
         >
-
-          <ShieldCheck size={50}/>
+          <ShieldCheck size={50} />
 
           <div>
-
-            <h2>
-
-              Safety Score
-
-            </h2>
+            <h2>Safety Score</h2>
 
             <p>
-
-              Your driving route is considered safe today.
-              AI predicts low congestion and no severe weather
-              conditions.
-
+              Your driving route is considered safe today. AI predicts low
+              congestion and no severe weather conditions.
             </p>
-
           </div>
 
-          <h1>
-
-            96%
-
-          </h1>
-
+          <h1>96%</h1>
         </motion.div>
-
       </div>
-
     </div>
-
   );
-
 }
