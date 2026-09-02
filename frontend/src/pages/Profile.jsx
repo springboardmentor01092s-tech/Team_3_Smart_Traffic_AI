@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import Layout from "../components/admin/Layout";
 import OperatorLayout from "../components/OperatorLayout";
+import CommuterLayout from "../components/CommuterLayout";
 
 const roleLabels = { admin: "Administrator", operator: "Operator", commuter: "Commuter" };
 
@@ -42,5 +43,5 @@ export default function Profile() {
     return <OperatorLayout title="User Profile & Settings">{renderProfileContent()}</OperatorLayout>;
   }
 
-  return renderProfileContent();
+  return <CommuterLayout>{renderProfileContent()}</CommuterLayout>;
 }

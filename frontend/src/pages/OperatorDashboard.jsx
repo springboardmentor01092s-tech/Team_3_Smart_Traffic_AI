@@ -206,7 +206,7 @@ export default function OperatorDashboard(){
 
                         <div className="hero-buttons">
 
-                            <button onClick={() => navigate("/live-map")}>
+                            <button onClick={() => navigate("/operator/live-traffic")}>
 
                                 <Navigation size={18}/>
 
@@ -214,7 +214,7 @@ export default function OperatorDashboard(){
 
                             </button>
 
-                            <button className="secondary" onClick={() => navigate("/prediction")}>
+                            <button className="secondary" onClick={() => navigate("/operator/prediction")}>
 
                                 <Radar size={18}/>
 
@@ -267,6 +267,10 @@ export default function OperatorDashboard(){
                                 key={index}
 
                                 className="glass-card"
+
+                                onClick={() => navigate(index % 2 === 0 ? "/operator/live-traffic" : "/operator/alerts")}
+
+                                style={{ cursor: "pointer" }}
 
                                 initial={{
 
@@ -351,6 +355,10 @@ export default function OperatorDashboard(){
 
                         className="glass-card map-card shine"
 
+                        onClick={() => navigate("/operator/live-traffic")}
+
+                        style={{ cursor: "pointer" }}
+
                         initial={{opacity:0,x:-40}}
 
                         whileInView={{opacity:1,x:0}}
@@ -404,6 +412,10 @@ export default function OperatorDashboard(){
                     <motion.div
 
                         className="glass-card ai-panel shine"
+
+                        onClick={() => navigate("/operator/alerts")}
+
+                        style={{ cursor: "pointer" }}
 
                         initial={{opacity:0,x:40}}
 

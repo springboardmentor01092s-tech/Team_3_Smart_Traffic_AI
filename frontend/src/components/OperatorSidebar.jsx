@@ -14,11 +14,11 @@ const operatorMenuItems = [
     icon: <LayoutDashboard size={18} />,
     path: "/operator",
   },
-  { title: "Live Traffic", icon: <Map size={18} />, path: "/live-map" },
+  { title: "Live Traffic", icon: <Map size={18} />, path: "/operator/live-traffic" },
   {
     title: "Prediction",
     icon: <BrainCircuit size={18} />,
-    path: "/prediction",
+    path: "/operator/prediction",
   },
   {
     title: "Alerts",
@@ -28,9 +28,9 @@ const operatorMenuItems = [
   {
     title: "Incidents",
     icon: <Activity size={18} />,
-    path: "/operator#incidents",
+    path: "/operator/alerts",
   },
-  { title: "Reports", icon: <FileText size={18} />, path: "/reports" },
+  { title: "Reports", icon: <FileText size={18} />, path: "/operator/reports" },
 ];
 
 export default function OperatorSidebar() {

@@ -63,34 +63,42 @@ export default function Dashboard() {
       <div className="dashboard">
         {/* KPI Stats Grid */}
         <div className="stats-grid">
-          <StatCard
-            title="Active Cameras"
-            value="128"
-            change="12 Today"
-            icon={<Camera />}
-            color="#00F5D4"
-          />
-          <StatCard
-            title="Traffic Flow"
-            value="93%"
-            change="5%"
-            icon={<Activity />}
-            color="#8B5CF6"
-          />
-          <StatCard
-            title="Vehicles Count"
-            value="18.2K"
-            change="845"
-            icon={<Car />}
-            color="#FF9B2F"
-          />
-          <StatCard
-            title="Incidents"
-            value="16"
-            change="2"
-            icon={<TriangleAlert />}
-            color="#FF5C7A"
-          />
+          <div onClick={() => navigate("/admin/analytics")} style={{ cursor: "pointer" }}>
+            <StatCard
+              title="Active Cameras"
+              value="128"
+              change="12 Today"
+              icon={<Camera />}
+              color="#00F5D4"
+            />
+          </div>
+          <div onClick={() => navigate("/admin/live-traffic")} style={{ cursor: "pointer" }}>
+            <StatCard
+              title="Traffic Flow"
+              value="93%"
+              change="5%"
+              icon={<Activity />}
+              color="#8B5CF6"
+            />
+          </div>
+          <div onClick={() => navigate("/admin/reports")} style={{ cursor: "pointer" }}>
+            <StatCard
+              title="Vehicles Count"
+              value="18.2K"
+              change="845"
+              icon={<Car />}
+              color="#FF9B2F"
+            />
+          </div>
+          <div onClick={() => navigate("/admin/alerts")} style={{ cursor: "pointer" }}>
+            <StatCard
+              title="Incidents"
+              value="16"
+              change="2"
+              icon={<TriangleAlert />}
+              color="#FF5C7A"
+            />
+          </div>
         </div>
 
         {/* Main 2-Column Dashboard Command Center Grid */}
@@ -127,7 +135,7 @@ export default function Dashboard() {
             </GlassCard>
 
             {/* Traffic Health & System Overview */}
-            <GlassCard className="health-card">
+            <GlassCard className="health-card" onClick={() => navigate("/admin/analytics")} style={{ cursor: "pointer" }}>
               <div className="card-header">
                 <h2>
                   <CheckCircle2 />
@@ -175,7 +183,7 @@ export default function Dashboard() {
             </GlassCard>
 
             {/* Traffic Trend Card */}
-            <GlassCard className="trend-card">
+            <GlassCard className="trend-card" onClick={() => navigate("/admin/analytics")} style={{ cursor: "pointer" }}>
               <div className="card-header">
                 <h2>
                   <TrendingUp />
@@ -206,7 +214,12 @@ export default function Dashboard() {
               </div>
               <div className="hotspot-list">
                 {hotspots.map((item, idx) => (
-                  <div className="hotspot-item" key={idx}>
+                  <div
+                    className="hotspot-item"
+                    key={idx}
+                    onClick={() => navigate("/admin/live-traffic")}
+                    style={{ cursor: "pointer" }}
+                  >
                     <span className="hotspot-road">{item.road}</span>
                     <span className="hotspot-speed">{item.speed}</span>
                     <span className={`hotspot-badge ${item.level}`}>
@@ -227,7 +240,12 @@ export default function Dashboard() {
               </div>
 
               {alerts.map((item, index) => (
-                <div className="alert-item" key={index}>
+                <div
+                  className="alert-item"
+                  key={index}
+                  onClick={() => navigate("/admin/alerts")}
+                  style={{ cursor: "pointer" }}
+                >
                   <div>
                     <h4>{item.road}</h4>
                     <p>{item.status}</p>
@@ -238,7 +256,11 @@ export default function Dashboard() {
             </GlassCard>
 
             {/* AI Insights Card */}
-            <GlassCard className="insight-card">
+            <GlassCard
+              className="insight-card"
+              onClick={() => navigate("/admin/prediction")}
+              style={{ cursor: "pointer" }}
+            >
               <div className="card-header">
                 <h2>
                   <BrainCircuit />

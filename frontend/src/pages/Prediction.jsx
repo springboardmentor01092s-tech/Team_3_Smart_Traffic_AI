@@ -2,6 +2,7 @@ import { useState } from "react";
 import api from "../services/api";
 import Layout from "../components/admin/Layout";
 import OperatorLayout from "../components/OperatorLayout";
+import CommuterLayout from "../components/CommuterLayout";
 import "../styles/prediction.css";
 
 const DAYS = [
@@ -362,6 +363,10 @@ export default function Prediction() {
     );
   }
 
-  // Commuter/User — no sidebar, just the content
-  return <PredictionContent />;
+  // Commuter/User — full commuter layout
+  return (
+    <CommuterLayout>
+      <PredictionContent />
+    </CommuterLayout>
+  );
 }

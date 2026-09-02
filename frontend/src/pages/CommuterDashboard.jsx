@@ -1,9 +1,8 @@
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
-import { NavLink, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 import {
-  Search,
   Bell,
   Clock3,
   MapPinned,
@@ -21,7 +20,7 @@ import {
 } from "lucide-react";
 
 import "../styles/commuterDashboard.css";
-import UserMenu from "../components/UserMenu";
+import CommuterLayout from "../components/CommuterLayout";
 
 const stats = [
   {
@@ -86,37 +85,10 @@ const alerts = [
 export default function CommuterDashboard() {
   const navigate = useNavigate();
 
-  const rawUsername = localStorage.getItem("username") || "Commuter";
-
-  const username = rawUsername.replace(/\s*\([^)]*\)/g, "").trim();
-
-  const [time, setTime] = useState("");
-
   // AI recommendation state
   const [recommendation, setRecommendation] = useState(null);
   const [loadingRecommendation, setLoadingRecommendation] = useState(false);
   const [recommendationError, setRecommendationError] = useState("");
-
-  // Clock
-  useEffect(() => {
-    const updateClock = () => {
-      const now = new Date();
-
-      setTime(
-        now.toLocaleTimeString([], {
-          hour: "2-digit",
-          minute: "2-digit",
-          second: "2-digit",
-        }),
-      );
-    };
-
-    updateClock();
-
-    const timer = setInterval(updateClock, 1000);
-
-    return () => clearInterval(timer);
-  }, []);
 
   // Get AI route recommendation
   const getAIRecommendation = async () => {
@@ -163,86 +135,8 @@ export default function CommuterDashboard() {
   );
 
   return (
-    <div className="commuter-dashboard">
-      {/* TOP BAR */}
-
-      <motion.header
-        className="commuter-topbar"
-        initial={{
-          opacity: 0,
-          y: -30,
-        }}
-        animate={{
-          opacity: 1,
-          y: 0,
-        }}
-        transition={{
-          duration: 0.6,
-        }}
-      >
-        <div className="top-left">
-          <div>
-            <h1>AI Traffic Assistant</h1>
-
-            <span>Welcome back, {username}</span>
-          </div>
-        </div>
-
-        <div className="top-middle">
-          <div className="search-box">
-            <Search size={18} />
-
-            <input type="text" placeholder="Search destination..." />
-          </div>
-        </div>
-
-        <div className="top-right">
-          <motion.div
-            whileHover={{
-              scale: 1.05,
-            }}
-            className="clock"
-          >
-            <Clock3 size={18} />
-
-            <span>{time}</span>
-          </motion.div>
-
-          <motion.button
-            whileHover={{
-              scale: 1.08,
-            }}
-            className="icon-btn notification"
-          >
-            <Bell size={20} />
-
-            <span className="badge">3</span>
-          </motion.button>
-
-          <UserMenu />
-        </div>
-      </motion.header>
-
-      {/* NAVIGATION */}
-
-      <nav className="commuter-nav" aria-label="Commuter navigation">
-        <NavLink to="/commuter" end>
-          Home
-        </NavLink>
-
-        <NavLink to="/live-map">Live Traffic</NavLink>
-
-        <NavLink to="/prediction">Prediction</NavLink>
-
-        <a href="/commuter#routes">Routes</a>
-
-        <NavLink to="/alerts">Alerts</NavLink>
-
-        <a href="/commuter#profile">Profile</a>
-      </nav>
-
-      <div className="dashboard-container">
-        {/* HERO */}
+    <CommuterLayout>
+      {/* HERO */}
 
         <motion.div
           className="hero-card"
@@ -681,7 +575,7 @@ export default function CommuterDashboard() {
                 <span>12 km • 16 mins</span>
               </div>
 
-              <button>Go</button>
+              <button onClick={() => navigate("/prediction")}>Go</button>
             </div>
 
             <div className="favorite-item">
@@ -691,7 +585,7 @@ export default function CommuterDashboard() {
                 <span>8 km • 11 mins</span>
               </div>
 
-              <button>Go</button>
+              <button onClick={() => navigate("/prediction")}>Go</button>
             </div>
 
             <div className="favorite-item">
@@ -701,7 +595,7 @@ export default function CommuterDashboard() {
                 <span>56 km • 54 mins</span>
               </div>
 
-              <button>Go</button>
+              <button onClick={() => navigate("/prediction")}>Go</button>
             </div>
           </motion.div>
 
@@ -882,7 +776,6 @@ export default function CommuterDashboard() {
 
           <h1>96%</h1>
         </motion.div>
-      </div>
-    </div>
+    </CommuterLayout>
   );
 }

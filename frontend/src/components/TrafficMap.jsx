@@ -7,11 +7,11 @@ import {
 } from "@vis.gl/react-google-maps";
 import { useEffect, useState } from "react";
 
-const ROAD_COORDINATES = {
-  "NH-24": { lat: 28.6139, lng: 77.2900 },
-  "Ring Road": { lat: 28.5729, lng: 77.2094 },
-  "MG Road": { lat: 28.4817, lng: 77.0873 },
-  "Outer Ring Road": { lat: 28.5355, lng: 77.3910 },
+export const ROAD_COORDINATES = {
+  "NH-24": { lat: 28.6139, lng: 77.2900, area: "Delhi East" },
+  "Ring Road": { lat: 28.5729, lng: 77.2094, area: "Central Delhi" },
+  "MG Road": { lat: 28.4817, lng: 77.0873, area: "Gurugram" },
+  "Outer Ring Road": { lat: 28.5355, lng: 77.3910, area: "Noida / East" },
 };
 
 const COLOR = {
@@ -38,8 +38,54 @@ function TrafficLayer() {
   return null;
 }
 
-function TrafficMarkers({ liveData = [] }) {
-  const [selectedRoad, setSelectedRoad] = useState(null);
+function MapController({ selectedRoadFilter, selectedAreaFilter, liveData }) {
+  const map = useMap();
+
+  useEffect(() => {
+    if (!map) return;
+
+    if (selectedRoadFilter && selectedRoadFilter !== "All Roads") {
+      const coords = ROAD_COORDINATES[selectedRoadFilter];
+      if (coords) {
+        map.panTo({ lat: coords.lat, lng: coords.lng });
+        map.setZoom(13);
+      }
+    } else if (selectedAreaFilter && selectedAreaFilter !== "All Areas") {
+      const matchingRoads = liveData.filter(
+        r => ROAD_COORDINATES[r.road_name]?.area === selectedAreaFilter
+      );
+      const coordsList = matchingRoads
+        .map(r => ROAD_COORDINATES[r.road_name])
+        .filter(Boolean);
+
+      if (coordsList.length > 0) {
+        const avgLat = coordsList.reduce((sum, c) => sum + c.lat, 0) / coordsList.length;
+        const avgLng = coordsList.reduce((sum, c) => sum + c.lng, 0) / coordsList.length;
+        map.panTo({ lat: avgLat, lng: avgLng });
+        map.setZoom(12);
+      }
+    } else {
+      map.panTo({ lat: 28.6139, lng: 77.2090 });
+      map.setZoom(11);
+    }
+  }, [map, selectedRoadFilter, selectedAreaFilter, liveData]);
+
+  return null;
+}
+
+function TrafficMarkers({ liveData = [], selectedRoadFilter = "All Roads" }) {
+  const [clickedRoad, setClickedRoad] = useState(null);
+
+  useEffect(() => {
+    if (selectedRoadFilter !== "All Roads") {
+      const match = liveData.find(r => r.road_name === selectedRoadFilter);
+      if (match) {
+        setClickedRoad(match);
+      }
+    } else {
+      setClickedRoad(null);
+    }
+  }, [selectedRoadFilter, liveData]);
 
   const getMarkerIcon = (color) => {
     const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 30" width="30" height="30">
@@ -66,18 +112,20 @@ function TrafficMarkers({ liveData = [] }) {
             }
           : getMarkerIcon(markerColor);
 
+        const isSelected = clickedRoad?.road_name === road.road_name;
+
         return (
           <div key={road.road_name}>
             <Marker
               position={coords}
-              onClick={() => setSelectedRoad(road)}
+              onClick={() => setClickedRoad(road)}
               icon={iconConfig}
             />
 
-            {selectedRoad?.road_name === road.road_name && (
+            {isSelected && (
               <InfoWindow
                 position={coords}
-                onCloseClick={() => setSelectedRoad(null)}
+                onCloseClick={() => setClickedRoad(null)}
               >
                 <div style={{ minWidth: "160px", color: "#111827" }}>
                   <strong>{road.road_name}</strong>
@@ -89,6 +137,14 @@ function TrafficMarkers({ liveData = [] }) {
                   <div>
                     Congestion: {road.congestion_level}
                   </div>
+                  {road.weather && (
+                    <div>Weather: {road.weather}</div>
+                  )}
+                  {road.accident ? (
+                    <div style={{ color: "#ef4444", fontWeight: "bold", marginTop: "2px" }}>
+                      ⚠️ Incident Reported
+                    </div>
+                  ) : null}
                 </div>
               </InfoWindow>
             )}
@@ -106,7 +162,12 @@ const DEFAULT_MAP_DATA = [
   { road_name: "Outer Ring Road", average_speed: 52, congestion_level: "Low" }
 ];
 
-export default function TrafficMap({ liveData = [], height = "280px" }) {
+export default function TrafficMap({
+  liveData = [],
+  height = "100%",
+  selectedRoadFilter = "All Roads",
+  selectedAreaFilter = "All Areas",
+}) {
   const apiKey = process.env.REACT_APP_GOOGLE_MAPS_API_KEY;
   const activeData = Array.isArray(liveData) && liveData.length > 0 ? liveData : DEFAULT_MAP_DATA;
 
@@ -115,6 +176,7 @@ export default function TrafficMap({ liveData = [], height = "280px" }) {
       <div
         style={{
           height: height,
+          minHeight: height === "100%" ? "480px" : "260px",
           width: "100%",
           display: "flex",
           alignItems: "center",
@@ -122,6 +184,7 @@ export default function TrafficMap({ liveData = [], height = "280px" }) {
           borderRadius: "12px",
           background: "#111827",
           color: "#9ca3af",
+          flex: 1,
         }}
       >
         Google Maps API key is missing.
@@ -134,11 +197,12 @@ export default function TrafficMap({ liveData = [], height = "280px" }) {
       <div
         style={{
           height: height,
-          minHeight: "260px",
+          minHeight: height === "100%" ? "480px" : "260px",
           width: "100%",
           borderRadius: "12px",
           overflow: "hidden",
-          position: "relative"
+          position: "relative",
+          flex: 1,
         }}
       >
         <Map
@@ -149,7 +213,15 @@ export default function TrafficMap({ liveData = [], height = "280px" }) {
           disableDefaultUI={false}
         >
           <TrafficLayer />
-          <TrafficMarkers liveData={activeData} />
+          <MapController
+            selectedRoadFilter={selectedRoadFilter}
+            selectedAreaFilter={selectedAreaFilter}
+            liveData={activeData}
+          />
+          <TrafficMarkers
+            liveData={activeData}
+            selectedRoadFilter={selectedRoadFilter}
+          />
         </Map>
       </div>
     </APIProvider>

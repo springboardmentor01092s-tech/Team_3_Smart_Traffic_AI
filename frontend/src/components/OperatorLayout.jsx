@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Search, Clock3, Bell } from "lucide-react";
 import OperatorSidebar from "./OperatorSidebar";
@@ -6,9 +7,17 @@ import UserMenu from "./UserMenu";
 import "../styles/operatorDashboard.css";
 
 export default function OperatorLayout({ children, title = "AI Traffic Operations Center" }) {
+  const navigate = useNavigate();
   const [time, setTime] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
   const rawUsername = localStorage.getItem("username") || "Operator";
   const username = rawUsername.replace(/\s*\([^)]*\)/g, "").trim();
+
+  const handleSearchKeyDown = (e) => {
+    if (e.key === "Enter" && searchQuery.trim()) {
+      navigate(`/operator/alerts?search=${encodeURIComponent(searchQuery.trim())}`);
+    }
+  };
 
   useEffect(() => {
     const updateClock = () => {
@@ -45,7 +54,13 @@ export default function OperatorLayout({ children, title = "AI Traffic Operation
           <div className="top-middle">
             <div className="search-box">
               <Search size={16} />
-              <input type="text" placeholder="Search cameras, roads, alerts..." />
+              <input
+                type="text"
+                placeholder="Search cameras, roads, alerts..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={handleSearchKeyDown}
+              />
             </div>
           </div>
 
@@ -55,7 +70,13 @@ export default function OperatorLayout({ children, title = "AI Traffic Operation
               <span>{time}</span>
             </div>
 
-            <button type="button" className="icon-btn notification" title="Notifications">
+            <button
+              type="button"
+              className="icon-btn notification"
+              title="Notifications"
+              onClick={() => navigate("/operator/alerts")}
+              style={{ cursor: "pointer" }}
+            >
               <Bell size={18} />
               <span className="badge">5</span>
             </button>

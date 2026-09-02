@@ -1,10 +1,6 @@
 import { useEffect, useState } from "react";
-import { NavLink } from "react-router-dom";
-import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 import {
-  Search,
-  Bell,
-  Clock3,
   Car,
   Activity,
   Camera,
@@ -14,48 +10,25 @@ import {
   Info
 } from "lucide-react";
 import api from "../services/api";
-import TrafficMap from "../components/TrafficMap";
+import TrafficMap, { ROAD_COORDINATES } from "../components/TrafficMap";
 import GlassCard from "../components/admin/GlassCard";
 import Layout from "../components/admin/Layout";
 import OperatorLayout from "../components/OperatorLayout";
-import UserMenu from "../components/UserMenu";
+import CommuterLayout from "../components/CommuterLayout";
 import "../styles/liveMap.css";
 
 export default function LiveMap() {
+  const navigate = useNavigate();
   const [liveData, setLiveData] = useState([]);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
-
   // Filter States
   const [selectedRoad, setSelectedRoad] = useState("All Roads");
   const [selectedArea, setSelectedArea] = useState("All Areas");
   const [selectedTime, setSelectedTime] = useState("Live / Now");
 
-  // Get Role and Profile from localStorage
+  // Get Role from localStorage
   const userRole = localStorage.getItem("role") || "commuter";
-  const rawUsername = localStorage.getItem("username") || "User";
-  const username = rawUsername.replace(/\s*\([^)]*\)/g, "").trim();
-
-  // Clock state (for Commuter header)
-  const [timeStr, setTimeStr] = useState("");
-
-  useEffect(() => {
-    if (userRole === "commuter") {
-      const updateClock = () => {
-        const now = new Date();
-        setTimeStr(
-          now.toLocaleTimeString([], {
-            hour: "2-digit",
-            minute: "2-digit",
-            second: "2-digit"
-          })
-        );
-      };
-      updateClock();
-      const timer = setInterval(updateClock, 1000);
-      return () => clearInterval(timer);
-    }
-  }, [userRole]);
 
   const fetchLiveData = async () => {
     try {
@@ -75,50 +48,86 @@ export default function LiveMap() {
     return () => clearInterval(interval);
   }, []);
 
-  // Filtered Live Data for map
-  const filteredData = selectedRoad === "All Roads"
-    ? liveData
-    : liveData.filter(r => r.road_name === selectedRoad);
+  // Base Data Source (Live data or map defaults if empty)
+  const baseData = liveData.length > 0 ? liveData : [
+    { road_name: "NH-24", average_speed: 45, congestion_level: "Medium", weather: "Clear", accident: false, recorded_at: new Date().toISOString() },
+    { road_name: "Ring Road", average_speed: 28, congestion_level: "High", weather: "Clear", accident: true, recorded_at: new Date().toISOString() },
+    { road_name: "MG Road", average_speed: 62, congestion_level: "Low", weather: "Sunny", accident: false, recorded_at: new Date().toISOString() },
+    { road_name: "Outer Ring Road", average_speed: 52, congestion_level: "Low", weather: "Clear", accident: false, recorded_at: new Date().toISOString() }
+  ];
 
-  // Derived Insights from filteredData (or liveData if no matches)
-  const dataForInsights = filteredData.length > 0 ? filteredData : liveData;
+  // Dynamic Options derived from data & road config
+  const roadOptions = Array.from(
+    new Set([...Object.keys(ROAD_COORDINATES), ...baseData.map(r => r.road_name)])
+  );
 
-  const avgSpeed = dataForInsights.length > 0
-    ? Math.round(dataForInsights.reduce((acc, curr) => acc + curr.average_speed, 0) / dataForInsights.length)
+  const areaOptions = Array.from(
+    new Set(Object.values(ROAD_COORDINATES).map(c => c.area).filter(Boolean))
+  );
+
+  // Multi-level Filtering (Road, Area, Time)
+  let filteredData = baseData;
+
+  if (selectedRoad !== "All Roads") {
+    filteredData = filteredData.filter(r => r.road_name === selectedRoad);
+  }
+
+  if (selectedArea !== "All Areas") {
+    filteredData = filteredData.filter(
+      r => ROAD_COORDINATES[r.road_name]?.area === selectedArea
+    );
+  }
+
+  if (selectedTime !== "Live / Now") {
+    const now = new Date();
+    const minutesCutoff = selectedTime === "Last 15 Mins" ? 15 : 60;
+    filteredData = filteredData.filter(r => {
+      if (!r.recorded_at) return true;
+      const recordTime = new Date(r.recorded_at);
+      const diffMinutes = (now - recordTime) / (1000 * 60);
+      return isNaN(diffMinutes) || diffMinutes <= minutesCutoff;
+    });
+  }
+
+  // Derived Insights based strictly on filteredData
+  const avgSpeed = filteredData.length > 0
+    ? Math.round(filteredData.reduce((acc, curr) => acc + curr.average_speed, 0) / filteredData.length)
     : 0;
 
-  const hasHigh = dataForInsights.some(r => r.congestion_level === "High");
-  const hasMedium = dataForInsights.some(r => r.congestion_level === "Medium");
-  const overallCongestion = hasHigh ? "HIGH" : (hasMedium ? "MEDIUM" : "LOW");
-  const overallStatus = hasHigh ? "Heavy Traffic" : (hasMedium ? "Moderate Traffic" : "Clear / Flowing");
+  const hasHigh = filteredData.some(r => r.congestion_level === "High");
+  const hasMedium = filteredData.some(r => r.congestion_level === "Medium");
+  const overallCongestion = filteredData.length === 0 ? "N/A" : (hasHigh ? "HIGH" : (hasMedium ? "MEDIUM" : "LOW"));
+  const overallStatus = filteredData.length === 0 ? "No Active Data" : (hasHigh ? "Heavy Traffic" : (hasMedium ? "Moderate Traffic" : "Clear / Flowing"));
 
-  const totalCameras = 3;
-  const camerasOnline = dataForInsights.length > 0
-    ? `${dataForInsights.length} / ${totalCameras}`
-    : `0 / ${totalCameras}`;
+  const camerasOnline = `${filteredData.length} / ${baseData.length}`;
 
-  const highCongestionZones = dataForInsights.filter(r => r.congestion_level === "High").length;
+  const highCongestionZones = filteredData.filter(r => r.congestion_level === "High" || r.accident).length;
 
   let mostCongestedRoad = "None";
-  const highRoads = dataForInsights.filter(r => r.congestion_level === "High");
-  const medRoads = dataForInsights.filter(r => r.congestion_level === "Medium");
+  const highRoads = filteredData.filter(r => r.congestion_level === "High");
+  const medRoads = filteredData.filter(r => r.congestion_level === "Medium");
   if (highRoads.length > 0) {
     mostCongestedRoad = highRoads[0].road_name;
   } else if (medRoads.length > 0) {
     mostCongestedRoad = medRoads[0].road_name;
-  } else if (dataForInsights.length > 0) {
-    mostCongestedRoad = dataForInsights[0].road_name;
+  } else if (filteredData.length > 0) {
+    mostCongestedRoad = filteredData[0].road_name;
   }
 
-  // Summary Text
+  // Dynamic Summary Text
   const getTrafficSummary = () => {
-    if (dataForInsights.length === 0) return "No traffic data available.";
-    const highList = dataForInsights.filter(r => r.congestion_level === "High").map(r => r.road_name);
-    const avgSpd = avgSpeed;
+    if (filteredData.length === 0) return "No traffic data matches the selected filters.";
+    const highList = filteredData.filter(r => r.congestion_level === "High").map(r => r.road_name);
+    const incidents = filteredData.filter(r => r.accident).map(r => r.road_name);
+
+    let summary = `Average speed across selected filter is ${avgSpeed} km/h.`;
     if (highList.length > 0) {
-      return `High congestion detected around ${highList.join(", ")}. Average speed is currently ${avgSpd} km/h.`;
+      summary += ` Heavy congestion on ${highList.join(", ")}.`;
     }
-    return `Traffic is flowing smoothly. Average speed is currently ${avgSpd} km/h.`;
+    if (incidents.length > 0) {
+      summary += ` ⚠️ Incident reported on ${incidents.join(", ")}.`;
+    }
+    return summary;
   };
 
   // Shared Page Content
@@ -138,12 +147,10 @@ export default function LiveMap() {
               onChange={(e) => setSelectedRoad(e.target.value)}
               className="filter-select"
             >
-              <option value="All Roads">Select Road</option>
               <option value="All Roads">All Roads</option>
-              <option value="NH-24">NH-24</option>
-              <option value="Ring Road">Ring Road</option>
-              <option value="MG Road">MG Road</option>
-              <option value="Outer Ring Road">Outer Ring Road</option>
+              {roadOptions.map((road) => (
+                <option key={road} value={road}>{road}</option>
+              ))}
             </select>
           </div>
 
@@ -153,9 +160,10 @@ export default function LiveMap() {
               onChange={(e) => setSelectedArea(e.target.value)}
               className="filter-select"
             >
-              <option value="All Areas">Select Area</option>
               <option value="All Areas">All Areas</option>
-              <option value="Delhi NCR">Delhi NCR</option>
+              {areaOptions.map((area) => (
+                <option key={area} value={area}>{area}</option>
+              ))}
             </select>
           </div>
 
@@ -165,8 +173,9 @@ export default function LiveMap() {
               onChange={(e) => setSelectedTime(e.target.value)}
               className="filter-select"
             >
-              <option value="Live / Now">Select Time</option>
               <option value="Live / Now">Live / Now</option>
+              <option value="Last 15 Mins">Last 15 Mins</option>
+              <option value="Last 1 Hour">Last 1 Hour</option>
             </select>
           </div>
         </div>
@@ -186,7 +195,12 @@ export default function LiveMap() {
             {loading && <p className="loading-text">Loading live traffic map...</p>}
             {error && <p className="live-map-error">{error}</p>}
             {/* Map always renders regardless of backend data availability */}
-            <TrafficMap liveData={filteredData} />
+            <TrafficMap
+              liveData={filteredData}
+              selectedRoadFilter={selectedRoad}
+              selectedAreaFilter={selectedArea}
+              height="100%"
+            />
           </GlassCard>
         </div>
 
@@ -274,51 +288,5 @@ export default function LiveMap() {
   }
 
   // default to commuter role / layout
-  return (
-    <div className="commuter-dashboard">
-      <motion.header
-        className="commuter-topbar"
-        initial={{ opacity: 0, y: -30 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-      >
-        <div className="top-left">
-          <div>
-            <h1>AI Traffic Assistant</h1>
-            <span>Welcome back, {username}</span>
-          </div>
-        </div>
-        <div className="top-middle">
-          <div className="search-box">
-            <Search size={18} />
-            <input type="text" placeholder="Search destination..." />
-          </div>
-        </div>
-        <div className="top-right">
-          <motion.div whileHover={{ scale: 1.05 }} className="clock">
-            <Clock3 size={18} />
-            <span>{timeStr}</span>
-          </motion.div>
-          <motion.button whileHover={{ scale: 1.08 }} className="icon-btn notification">
-            <Bell size={20} />
-            <span className="badge">3</span>
-          </motion.button>
-          <UserMenu />
-        </div>
-      </motion.header>
-
-      <nav className="commuter-nav" aria-label="Commuter navigation">
-        <NavLink to="/commuter" end>Home</NavLink>
-        <NavLink to="/live-map">Live Traffic</NavLink>
-        <NavLink to="/prediction">Prediction</NavLink>
-        <a href="/commuter#routes">Routes</a>
-        <NavLink to="/alerts">Alerts</NavLink>
-        <a href="/commuter#profile">Profile</a>
-      </nav>
-
-      <div className="dashboard-container" style={{ padding: "16px 20px", maxWidth: "1300px", margin: "0 auto" }}>
-        {renderContent()}
-      </div>
-    </div>
-  );
+  return <CommuterLayout>{renderContent()}</CommuterLayout>;
 }

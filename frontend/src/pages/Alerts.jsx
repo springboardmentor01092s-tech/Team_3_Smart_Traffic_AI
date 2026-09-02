@@ -1,6 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { NavLink } from "react-router-dom";
-import { motion } from "framer-motion";
 import {
   AlertTriangle,
   CheckCircle,
@@ -10,9 +8,6 @@ import {
   Siren,
   Clock,
   Filter,
-  Search,
-  Bell,
-  Clock3,
   Edit,
   Trash2,
 } from "lucide-react";
@@ -20,7 +15,7 @@ import {
 import api from "../services/api";
 import Layout from "../components/admin/Layout";
 import OperatorLayout from "../components/OperatorLayout";
-import UserMenu from "../components/UserMenu";
+import CommuterLayout from "../components/CommuterLayout";
 import "../styles/alerts.css";
 
 // 5 DEMO ALERTS FOR TESTING
@@ -1073,57 +1068,7 @@ const Alerts = () => {
   }
 
   // Commuter layout
-  return (
-    <div className="commuter-dashboard">
-      <motion.header
-        className="commuter-topbar"
-        initial={{ opacity: 0, y: -30 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-      >
-        <div className="top-left">
-          <div>
-            <h1>AI Traffic Assistant</h1>
-            <span>Welcome back, {username}</span>
-          </div>
-        </div>
-        <div className="top-middle">
-          <div className="search-box">
-            <Search size={18} />
-            <input type="text" placeholder="Search roads, alerts..." />
-          </div>
-        </div>
-        <div className="top-right">
-          <motion.div whileHover={{ scale: 1.05 }} className="clock">
-            <Clock3 size={18} />
-            <span>{timeStr}</span>
-          </motion.div>
-          <motion.button whileHover={{ scale: 1.08 }} className="icon-btn notification">
-            <Bell size={20} />
-            <span className="badge">3</span>
-          </motion.button>
-          <UserMenu />
-        </div>
-      </motion.header>
-
-      <nav className="commuter-nav" aria-label="Commuter navigation">
-        <NavLink to="/commuter" end>
-          Home
-        </NavLink>
-        <NavLink to="/live-map">Live Traffic</NavLink>
-        <NavLink to="/prediction">Prediction</NavLink>
-        <NavLink to="/alerts">Alerts</NavLink>
-        <NavLink to="/profile">Profile</NavLink>
-      </nav>
-
-      <div
-        className="dashboard-container"
-        style={{ padding: "16px 20px", maxWidth: "1300px", margin: "0 auto" }}
-      >
-        {renderAlertsContent()}
-      </div>
-    </div>
-  );
+  return <CommuterLayout>{renderAlertsContent()}</CommuterLayout>;
 };
 
 export default Alerts;
