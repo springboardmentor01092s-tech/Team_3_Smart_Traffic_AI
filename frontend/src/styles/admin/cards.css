@@ -8,6 +8,8 @@
 
     overflow:hidden;
 
+    min-width:0;
+
     padding:12px 14px;
 
     border-radius:12px;
@@ -329,5 +331,101 @@
     letter-spacing:1px;
 
     transition:.3s;
+
+}
+
+/*=================================================
+                RESPONSIVE / MOBILE
+==================================================*/
+
+@media (max-width: 768px) {
+
+    .stat-card {
+
+        padding: 16px;
+
+        min-height: unset;
+
+    }
+
+    .icon-circle {
+
+        width: 54px;
+
+        height: 54px;
+
+    }
+
+    .icon-circle svg {
+
+        width: 26px;
+
+        height: 26px;
+
+    }
+
+    .stat-bottom h1 {
+
+        font-size: 34px;
+
+    }
+
+    .stat-bottom p {
+
+        font-size: 15px;
+
+    }
+
+    .stat-bottom span {
+
+        font-size: 14px;
+
+    }
+
+    .glass-card {
+
+        padding: 10px 12px;
+
+    }
+
+}
+
+@media (max-width: 480px) {
+
+    .stat-card {
+
+        padding: 14px;
+
+    }
+
+    .icon-circle {
+
+        width: 46px;
+
+        height: 46px;
+
+    }
+
+    .icon-circle svg {
+
+        width: 22px;
+
+        height: 22px;
+
+    }
+
+    .stat-bottom h1 {
+
+        font-size: 28px;
+
+    }
+
+    .status-dot {
+
+        right: 12px;
+
+        top: 12px;
+
+    }
 
 }
