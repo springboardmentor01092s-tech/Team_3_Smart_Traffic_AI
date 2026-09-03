@@ -10,6 +10,7 @@ import Analytics from "./pages/admin/Analytics";
 import Reports from "./pages/admin/Reports";
 
 import OperatorDashboard from "./pages/OperatorDashboard";
+import OperatorIncidents from "./pages/OperatorIncidents";
 import CommuterDashboard from "./pages/CommuterDashboard";
 
 import Prediction from "./pages/Prediction";
@@ -102,6 +103,15 @@ function App() {
         }
       />
 
+      <Route
+        path="/operator/incidents"
+        element={
+          <ProtectedRoute role="operator">
+            <OperatorIncidents />
+          </ProtectedRoute>
+        }
+      />
+
       {/* Operator reports */}
       <Route
         path="/operator/reports"
@@ -153,7 +163,34 @@ function App() {
         }
       />
 
+      <Route
+        path="/commuter/reports"
+        element={
+          <ProtectedRoute role="commuter">
+            <Reports />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/commuter/analytics"
+        element={
+          <ProtectedRoute role="commuter">
+            <Analytics />
+          </ProtectedRoute>
+        }
+      />
+
       {/* ================= GENERAL AUTHENTICATED ================= */}
+
+      <Route
+        path="/analytics"
+        element={
+          <ProtectedRoute>
+            <Analytics />
+          </ProtectedRoute>
+        }
+      />
 
       <Route
         path="/prediction"

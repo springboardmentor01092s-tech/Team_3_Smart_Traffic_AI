@@ -9,11 +9,8 @@
   gap: 24px;
   color: #eef6ff;
   box-sizing: border-box;
+  width: 100%;
 }
-/* NOTE: no padding / min-height here — Layout's ".content" already
-   handles page padding (125px 30px 30px 30px). Adding it again here
-   was doubling the spacing and pushing the page way past 100vh,
-   which is what created the big empty gaps above/below the content. */
 
 /* HEADER */
 .analytics-header {
@@ -40,7 +37,8 @@
 }
 
 .demo-flag {
-  color: #f59e0b;
+  color: #00d4ff;
+  font-weight: 600;
 }
 
 .analytics-controls {
@@ -112,11 +110,7 @@
   cursor: pointer;
 }
 
-/* STAT CARDS
-   Fixed 4-column grid (same pattern as the main Dashboard's
-   .stats-grid) instead of auto-fit/minmax. auto-fit let each of the
-   4 cards stretch to fill huge amounts of empty width on large
-   screens, which is what was reading as "too much space". */
+/* STAT CARDS */
 .analytics-stats-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -169,12 +163,51 @@
   color: #ffffff;
 }
 
-/* TRAFFIC TREND + HISTORICAL INSIGHTS
-   Two separate full-width panels stacked on top of each other,
-   both spanning the same width as the header/stat cards above. */
+/* TRAFFIC TREND + HISTORICAL INSIGHTS */
 .trend-panel,
 .insights-panel {
   width: 100%;
+}
+
+.trend-panel {
+  width: 100%;
+  min-height: 380px;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
+
+.panel-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.panel-title-row .panel-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 0;
+}
+
+.trend-subtitle-badge {
+  font-size: 12px;
+  color: #00d4ff;
+  background: rgba(0, 212, 255, 0.1);
+  border: 1px solid rgba(0, 212, 255, 0.25);
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-weight: 600;
+}
+
+.trend-chart-wrapper {
+  width: 100%;
+  height: 320px;
+  min-height: 320px;
+  position: relative;
 }
 
 .insights-panel-body {
@@ -241,11 +274,6 @@
 .heatmap-hours-row,
 .heatmap-row {
   display: grid;
-  /* Fixed 32px hour columns instead of 1fr — 1fr let each of the 24
-     cells stretch across the full panel width on large screens,
-     which spread the heatmap out and left big empty-looking gaps
-     between cells. Fixed width + the .heatmap-scroll overflow-x
-     wrapper keeps cells compact and lets the row scroll instead. */
   grid-template-columns: 140px repeat(24, 32px);
   width: max-content;
   gap: 3px;

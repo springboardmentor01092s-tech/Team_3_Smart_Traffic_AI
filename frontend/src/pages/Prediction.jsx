@@ -76,7 +76,7 @@ function PredictionContent() {
     } catch (err) {
       setError(
         err.response?.data?.detail ||
-          "Prediction failed. Please check your inputs.",
+        "Prediction failed. Please check your inputs.",
       );
     } finally {
       setLoading(false);
@@ -274,9 +274,8 @@ function PredictionContent() {
               {routeResult.routes.map((route) => (
                 <div
                   key={route.road_name}
-                  className={`route-card ${
-                    route.recommended ? "recommended-route" : ""
-                  }`}
+                  className={`route-card ${route.recommended ? "recommended-route" : ""
+                    }`}
                 >
                   {route.recommended && <strong>✓ AI RECOMMENDED</strong>}
 

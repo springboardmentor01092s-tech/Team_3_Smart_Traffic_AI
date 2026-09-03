@@ -28,7 +28,7 @@ const operatorMenuItems = [
   {
     title: "Incidents",
     icon: <Activity size={18} />,
-    path: "/operator/alerts",
+    path: "/operator/incidents",
   },
   { title: "Reports", icon: <FileText size={18} />, path: "/operator/reports" },
 ];

@@ -1,0 +1,774 @@
+/* ==========================================================================
+   GLOBAL & ROLE-THEMED REPORTS STYLESHEET
+   Supports Admin, Operator, and Commuter (User) Dashboard Visual Themes
+   ========================================================================== */
+
+.traffic-reports-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+  padding-bottom: 30px;
+  font-family: inherit;
+  color: #f8fafc;
+}
+
+/* ==========================================================================
+   TOP BAR & HEADER
+   ========================================================================== */
+
+.reports-top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding: 20px 24px;
+  border-radius: 16px;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  transition: all 0.3s ease;
+}
+
+.reports-title-area h1 {
+  font-size: 1.6rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin: 6px 0 4px 0;
+}
+
+.reports-title-area p {
+  font-size: 0.88rem;
+  opacity: 0.75;
+  margin: 0;
+  max-width: 650px;
+}
+
+.badge-live {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: 20px;
+}
+
+.live-pulse {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: currentColor;
+  box-shadow: 0 0 8px currentColor;
+  animation: pulse-ring 1.8s infinite;
+}
+
+@keyframes pulse-ring {
+  0% { transform: scale(0.95); opacity: 1; }
+  50% { transform: scale(1.2); opacity: 0.5; }
+  100% { transform: scale(0.95); opacity: 1; }
+}
+
+.reports-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.last-updated-text {
+  font-size: 0.78rem;
+  opacity: 0.7;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-right: 6px;
+}
+
+.btn-report-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 16px;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.25s ease;
+}
+
+.btn-report-action:hover {
+  transform: translateY(-2px);
+}
+
+.spin-animation {
+  animation: spin 1.2s linear infinite;
+}
+
+@keyframes spin {
+  100% { transform: rotate(360deg); }
+}
+
+/* ==========================================================================
+   KPI STAT CARDS GRID
+   ========================================================================== */
+
+.reports-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.reports-stat-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 18px 20px;
+  border-radius: 16px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition: all 0.3s ease;
+}
+
+.reports-stat-card:hover {
+  transform: translateY(-3px);
+}
+
+.stat-icon-wrapper {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.stat-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.stat-label {
+  font-size: 0.78rem;
+  opacity: 0.75;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.stat-value {
+  font-size: 1.5rem;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.stat-value small {
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.stat-subtext {
+  font-size: 0.75rem;
+  opacity: 0.6;
+  margin-top: 2px;
+}
+
+/* ==========================================================================
+   PRIORITY REPORTS CARD & TABLE (ABOVE THE FOLD)
+   ========================================================================== */
+
+.priority-reports-card {
+  border-radius: 16px;
+  padding: 22px 24px;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+.flex-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+.table-controls-inline {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.search-input-wrapper {
+  position: relative;
+  min-width: 200px;
+}
+
+.search-input-wrapper .search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  opacity: 0.5;
+}
+
+.search-input-wrapper input {
+  width: 100%;
+  padding: 8px 12px 8px 34px;
+  border-radius: 10px;
+  font-size: 0.82rem;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.filter-select-group {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.filter-select-group .filter-icon {
+  position: absolute;
+  left: 12px;
+  pointer-events: none;
+  opacity: 0.6;
+}
+
+.filter-select-group select {
+  padding: 8px 14px 8px 34px;
+  border-radius: 10px;
+  font-size: 0.82rem;
+  outline: none;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+/* ==========================================================================
+   ROAD INCIDENTS TELEMETRY TABLE
+   ========================================================================== */
+
+.reports-table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  border-radius: 12px;
+}
+
+.reports-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 0.86rem;
+  text-align: left;
+}
+
+.reports-table th {
+  padding: 12px 14px;
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 0.73rem;
+  letter-spacing: 0.05em;
+  opacity: 0.75;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.reports-table td {
+  padding: 12px 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  vertical-align: middle;
+}
+
+.reports-table tr:last-child td {
+  border-bottom: none;
+}
+
+.reports-table tr:hover td {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.incident-type-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.82rem;
+}
+
+.road-cell {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.cell-icon {
+  opacity: 0.6;
+}
+
+.badge-severity {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.badge-severity.high {
+  background: rgba(255, 92, 114, 0.2);
+  color: #ff5c72;
+  border: 1px solid rgba(255, 92, 114, 0.4);
+}
+
+.badge-severity.medium {
+  background: rgba(255, 174, 0, 0.2);
+  color: #ffae00;
+  border: 1px solid rgba(255, 174, 0, 0.4);
+}
+
+.badge-severity.low {
+  background: rgba(0, 255, 149, 0.15);
+  color: #00ff95;
+  border: 1px solid rgba(0, 255, 149, 0.3);
+}
+
+.badge-status {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.badge-status.active {
+  background: rgba(0, 212, 255, 0.15);
+  color: #00d4ff;
+  border: 1px solid rgba(0, 212, 255, 0.3);
+}
+
+.badge-status.acknowledged {
+  background: rgba(255, 196, 0, 0.15);
+  color: #ffc400;
+  border: 1px solid rgba(255, 196, 0, 0.3);
+}
+
+.badge-status.resolved {
+  background: rgba(148, 163, 184, 0.15);
+  color: #94a3b8;
+  border: 1px solid rgba(148, 163, 184, 0.3);
+}
+
+/* Incident PDF Download Action Button */
+.btn-download-incident {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.btn-download-incident:hover {
+  transform: scale(1.04);
+}
+
+/* ==========================================================================
+   SECONDARY ANALYTICS (BELOW THE FOLD)
+   ========================================================================== */
+
+.secondary-analytics-title {
+  margin-top: 10px;
+  margin-bottom: -6px;
+}
+
+.secondary-analytics-title h3 {
+  font-size: 1rem;
+  font-weight: 700;
+  opacity: 0.75;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.reports-charts-grid {
+  display: grid;
+  grid-template-columns: 2fr 3fr;
+  gap: 18px;
+}
+
+@media (max-width: 992px) {
+  .reports-charts-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.reports-card {
+  border-radius: 16px;
+  padding: 20px 22px;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.reports-card-header h2 {
+  font-size: 1.05rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+}
+
+.card-subtitle {
+  font-size: 0.78rem;
+  opacity: 0.65;
+}
+
+.chart-container {
+  margin-top: 6px;
+}
+
+.reports-empty-chart {
+  height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.88rem;
+  opacity: 0.6;
+}
+
+/* Congestion Breakdown Bar Items */
+.congestion-breakdown-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.congestion-bar-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.congestion-info {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+}
+
+.congestion-info .label.low { color: #00ff95; }
+.congestion-info .label.medium { color: #ffae00; }
+.congestion-info .label.high { color: #ff5c72; }
+
+.progress-bar-bg {
+  width: 100%;
+  height: 8px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  border-radius: 6px;
+  transition: width 0.6s ease;
+}
+
+.progress-bar-fill.low { background: linear-gradient(90deg, #00ff95, #00d4ff); }
+.progress-bar-fill.medium { background: linear-gradient(90deg, #ffae00, #ff7b00); }
+.progress-bar-fill.high { background: linear-gradient(90deg, #ff5c72, #ff2d55); }
+
+.insights-mini-box {
+  margin-top: 10px;
+  padding: 14px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.insight-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.insight-icon {
+  opacity: 0.8;
+  flex-shrink: 0;
+}
+
+.mini-title {
+  display: block;
+  font-size: 0.75rem;
+  opacity: 0.6;
+  text-transform: uppercase;
+}
+
+.mini-val {
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+.mini-val.highlight {
+  color: #00F5D4;
+}
+
+/* ==========================================================================
+   STATE CARDS (Loading / Empty / Error)
+   ========================================================================== */
+
+.reports-state-card {
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 50px 20px;
+  gap: 12px;
+}
+
+.reports-state-card h3 {
+  margin: 0;
+  font-size: 1.2rem;
+}
+
+.reports-state-card p {
+  opacity: 0.65;
+  font-size: 0.9rem;
+  margin: 0;
+  max-width: 400px;
+}
+
+.reports-error-card {
+  border: 1px solid rgba(255, 92, 114, 0.3);
+  color: #ff5c72;
+}
+
+/* ==========================================================================
+   ROLE THEME 1: ADMIN DASHBOARD THEME
+   - Dark glassmorphism with neon cyan, purple, and orange accents
+   ========================================================================== */
+
+.reports-theme-admin .reports-top-bar,
+.reports-theme-admin .reports-stat-card,
+.reports-theme-admin .priority-reports-card,
+.reports-theme-admin .reports-card {
+  background: rgba(15, 23, 42, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+}
+
+.reports-theme-admin .badge-live {
+  background: rgba(0, 245, 212, 0.12);
+  color: #00F5D4;
+  border: 1px solid rgba(0, 245, 212, 0.3);
+}
+
+.reports-theme-admin .reports-title-area h1 {
+  color: #f8fafc;
+  background: linear-gradient(135deg, #ffffff 0%, #00F5D4 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.reports-theme-admin .btn-refresh {
+  background: rgba(255, 255, 255, 0.06);
+  color: #f8fafc;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.reports-theme-admin .btn-export-csv {
+  background: rgba(0, 245, 212, 0.15);
+  color: #00F5D4;
+  border: 1px solid rgba(0, 245, 212, 0.35);
+}
+
+.reports-theme-admin .btn-export-pdf {
+  background: rgba(139, 92, 246, 0.18);
+  color: #c084fc;
+  border: 1px solid rgba(139, 92, 246, 0.35);
+}
+
+.reports-theme-admin .btn-download-incident {
+  background: rgba(0, 245, 212, 0.15);
+  color: #00F5D4;
+  border: 1px solid rgba(0, 245, 212, 0.4);
+  box-shadow: 0 0 10px rgba(0, 245, 212, 0.15);
+}
+
+.reports-theme-admin .btn-download-incident:hover {
+  background: rgba(0, 245, 212, 0.28);
+  color: #ffffff;
+}
+
+.reports-theme-admin .search-input-wrapper input,
+.reports-theme-admin .filter-select-group select {
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #f8fafc;
+}
+
+.reports-theme-admin .stat-icon-wrapper.color-vehicles { background: rgba(255, 155, 47, 0.18); color: #FF9B2F; }
+.reports-theme-admin .stat-icon-wrapper.color-speed { background: rgba(0, 245, 212, 0.18); color: #00F5D4; }
+.reports-theme-admin .stat-icon-wrapper.color-roads { background: rgba(139, 92, 246, 0.18); color: #a78bfa; }
+.reports-theme-admin .stat-icon-wrapper.color-incidents { background: rgba(255, 92, 122, 0.18); color: #FF5C7A; }
+
+.reports-theme-admin .reports-table th {
+  background: rgba(15, 23, 42, 0.9);
+  color: #94a3b8;
+}
+
+/* ==========================================================================
+   ROLE THEME 2: OPERATOR DASHBOARD THEME
+   - Cybernetic Command Center theme with electric cyan & dark navy
+   ========================================================================== */
+
+.reports-theme-operator .reports-top-bar,
+.reports-theme-operator .reports-stat-card,
+.reports-theme-operator .priority-reports-card,
+.reports-theme-operator .reports-card {
+  background: rgba(9, 13, 22, 0.85);
+  border: 1px solid rgba(0, 212, 255, 0.15);
+  box-shadow: 0 10px 30px rgba(0, 212, 255, 0.05);
+}
+
+.reports-theme-operator .badge-live {
+  background: rgba(0, 212, 255, 0.12);
+  color: #00d4ff;
+  border: 1px solid rgba(0, 212, 255, 0.35);
+}
+
+.reports-theme-operator .reports-title-area h1 {
+  color: #f8fafc;
+  background: linear-gradient(135deg, #00d4ff 0%, #00ff9d 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.reports-theme-operator .btn-refresh {
+  background: rgba(0, 212, 255, 0.1);
+  color: #00d4ff;
+  border: 1px solid rgba(0, 212, 255, 0.25);
+}
+
+.reports-theme-operator .btn-export-csv {
+  background: rgba(0, 255, 157, 0.15);
+  color: #00ff9d;
+  border: 1px solid rgba(0, 255, 157, 0.35);
+}
+
+.reports-theme-operator .btn-export-pdf {
+  background: rgba(0, 212, 255, 0.18);
+  color: #00d4ff;
+  border: 1px solid rgba(0, 212, 255, 0.35);
+}
+
+.reports-theme-operator .btn-download-incident {
+  background: rgba(0, 212, 255, 0.18);
+  color: #00d4ff;
+  border: 1px solid rgba(0, 212, 255, 0.4);
+  box-shadow: 0 0 10px rgba(0, 212, 255, 0.2);
+}
+
+.reports-theme-operator .btn-download-incident:hover {
+  background: rgba(0, 212, 255, 0.35);
+  color: #ffffff;
+}
+
+.reports-theme-operator .search-input-wrapper input,
+.reports-theme-operator .filter-select-group select {
+  background: rgba(6, 11, 19, 0.9);
+  border: 1px solid rgba(0, 212, 255, 0.2);
+  color: #f8fafc;
+}
+
+.reports-theme-operator .stat-icon-wrapper.color-vehicles { background: rgba(0, 212, 255, 0.18); color: #00d4ff; }
+.reports-theme-operator .stat-icon-wrapper.color-speed { background: rgba(0, 255, 157, 0.18); color: #00ff9d; }
+.reports-theme-operator .stat-icon-wrapper.color-roads { background: rgba(255, 196, 0, 0.18); color: #ffc400; }
+.reports-theme-operator .stat-icon-wrapper.color-incidents { background: rgba(255, 92, 114, 0.18); color: #ff5c72; }
+
+.reports-theme-operator .reports-table th {
+  background: rgba(6, 11, 19, 0.95);
+  color: #00d4ff;
+}
+
+/* ==========================================================================
+   ROLE THEME 3: USER / COMMUTER DASHBOARD THEME
+   - Modern User Dashboard with dark sleek gradient and mint/cyan highlights
+   ========================================================================== */
+
+.reports-theme-commuter .reports-top-bar,
+.reports-theme-commuter .reports-stat-card,
+.reports-theme-commuter .priority-reports-card,
+.reports-theme-commuter .reports-card {
+  background: rgba(11, 17, 32, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+}
+
+.reports-theme-commuter .badge-live {
+  background: rgba(0, 255, 149, 0.12);
+  color: #00ff95;
+  border: 1px solid rgba(0, 255, 149, 0.3);
+}
+
+.reports-theme-commuter .reports-title-area h1 {
+  color: #f8fafc;
+  background: linear-gradient(135deg, #ffffff 0%, #00ff95 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.reports-theme-commuter .btn-refresh {
+  background: rgba(255, 255, 255, 0.06);
+  color: #f8fafc;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.reports-theme-commuter .btn-export-csv {
+  background: rgba(0, 212, 255, 0.15);
+  color: #00d4ff;
+  border: 1px solid rgba(0, 212, 255, 0.3);
+}
+
+.reports-theme-commuter .btn-export-pdf {
+  background: rgba(255, 61, 129, 0.18);
+  color: #ff659c;
+  border: 1px solid rgba(255, 61, 129, 0.35);
+}
+
+.reports-theme-commuter .btn-download-incident {
+  background: rgba(0, 255, 149, 0.15);
+  color: #00ff95;
+  border: 1px solid rgba(0, 255, 149, 0.35);
+  box-shadow: 0 0 10px rgba(0, 255, 149, 0.15);
+}
+
+.reports-theme-commuter .btn-download-incident:hover {
+  background: rgba(0, 255, 149, 0.28);
+  color: #ffffff;
+}
+
+.reports-theme-commuter .search-input-wrapper input,
+.reports-theme-commuter .filter-select-group select {
+  background: rgba(8, 12, 20, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.reports-theme-commuter .stat-icon-wrapper.color-vehicles { background: rgba(0, 212, 255, 0.18); color: #00d4ff; }
+.reports-theme-commuter .stat-icon-wrapper.color-speed { background: rgba(0, 255, 149, 0.18); color: #00ff95; }
+.reports-theme-commuter .stat-icon-wrapper.color-roads { background: rgba(255, 174, 0, 0.18); color: #ffae00; }
+.reports-theme-commuter .stat-icon-wrapper.color-incidents { background: rgba(255, 61, 129, 0.18); color: #ff3d81; }
+
+.reports-theme-commuter .reports-table th {
+  background: rgba(8, 12, 20, 0.95);
+  color: #38bdf8;
+}

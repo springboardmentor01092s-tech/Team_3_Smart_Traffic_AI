@@ -13,7 +13,7 @@
   letter-spacing: -0.5px;
 }
 
-.prediction-page > p {
+.prediction-page>p {
   margin: 0 0 28px;
   color: #95a9c8;
   line-height: 1.6;
@@ -141,7 +141,7 @@
   font-weight: 600;
 }
 
-.prediction-result > p {
+.prediction-result>p {
   margin: 8px 0 20px;
   color: #95a9c8;
 }
@@ -149,9 +149,11 @@
 .prediction-result.level-low {
   border-left: 5px solid #00ff95;
 }
+
 .prediction-result.level-medium {
   border-left: 5px solid #ffb100;
 }
+
 .prediction-result.level-high {
   border-left: 5px solid #ff4d67;
 }
@@ -205,6 +207,7 @@
     align-self: auto;
   }
 }
+
 /* =========================================================
    AI ROUTE RECOMMENDATION
    ========================================================= */
@@ -223,7 +226,7 @@
   font-size: 24px;
 }
 
-.route-recommendation > p {
+.route-recommendation>p {
   margin: 0 0 24px;
   opacity: 0.7;
   line-height: 1.6;
@@ -324,7 +327,7 @@
   background: rgba(34, 197, 94, 0.07);
 }
 
-.route-card > strong {
+.route-card>strong {
   display: inline-block;
   margin-bottom: 12px;
   padding: 5px 9px;

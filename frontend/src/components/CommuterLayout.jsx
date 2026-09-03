@@ -88,7 +88,7 @@ export default function CommuterLayout({ children }) {
         </NavLink>
         <NavLink to="/live-map">Live Traffic</NavLink>
         <NavLink to="/prediction">Prediction</NavLink>
-        <NavLink to="/prediction">Routes</NavLink>
+        <NavLink to="/reports">Reports</NavLink>
         <NavLink to="/alerts">Alerts</NavLink>
         <NavLink to="/profile">Profile</NavLink>
       </nav>
