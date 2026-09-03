@@ -432,6 +432,62 @@
 
 }
 
+@media(max-width:992px){
+
+    .topbar{
+
+        left:20px;
+
+        right:20px;
+
+        padding-left:56px;
+
+        flex-wrap:wrap;
+
+        height:auto;
+
+        min-height:58px;
+
+        max-height:none;
+
+        padding-top:10px;
+
+        padding-bottom:10px;
+
+        row-gap:8px;
+
+    }
+
+    .top-left h1{
+
+        font-size:17px;
+
+    }
+
+    .top-right{
+
+        flex-wrap:wrap;
+
+        gap:8px;
+
+    }
+}
+
+@media(max-width:480px){
+
+    .top-left span{
+
+        display:none;
+
+    }
+
+    .top-left h1{
+
+        font-size:15px;
+
+    }
+}
+
 @media(max-width:768px){
 
     .topbar{
