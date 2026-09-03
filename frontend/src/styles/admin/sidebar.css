@@ -759,11 +759,119 @@
    RESPONSIVE
 =========================================================== */
 
+.mobile-menu-toggle {
+
+    display: none;
+
+    position: fixed;
+
+    top: 12px;
+
+    left: 14px;
+
+    z-index: 950;
+
+    width: 40px;
+
+    height: 40px;
+
+    align-items: center;
+
+    justify-content: center;
+
+    border-radius: 10px;
+
+    background: rgba(9, 13, 22, 0.9);
+
+    border: 1px solid rgba(0, 245, 212, 0.3);
+
+    color: #00F5D4;
+
+    cursor: pointer;
+
+    backdrop-filter: blur(12px);
+
+}
+
+.mobile-close-btn {
+
+    display: none;
+
+    align-items: center;
+
+    justify-content: center;
+
+    width: 30px;
+
+    height: 30px;
+
+    border-radius: 8px;
+
+    background: rgba(255, 255, 255, 0.06);
+
+    border: none;
+
+    color: #fff;
+
+    cursor: pointer;
+
+}
+
+.sidebar-backdrop {
+
+    display: none;
+
+}
+
 @media(max-width:992px) {
 
     .sidebar {
 
         transform: translateX(-100%);
+
+        z-index: 900;
+
+    }
+
+    .sidebar.mobile-open {
+
+        transform: translateX(0);
+
+        width: 220px !important;
+
+        box-shadow: 0 0 40px rgba(0, 0, 0, 0.6);
+
+    }
+
+    .collapse-btn {
+
+        display: none;
+
+    }
+
+    .mobile-close-btn {
+
+        display: flex;
+
+    }
+
+    .mobile-menu-toggle {
+
+        display: flex;
+
+    }
+
+    .sidebar-backdrop {
+
+        display: block;
+
+        position: fixed;
+
+        inset: 0;
+
+        background: rgba(0, 0, 0, 0.6);
+
+        z-index: 850;
 
     }
 
