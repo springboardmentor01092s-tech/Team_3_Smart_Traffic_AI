@@ -36,6 +36,12 @@
 
 }
 
+.dashboard-grid > * {
+
+    min-width:0;
+
+}
+
 .left-column, .right-column {
 
     display:flex;
@@ -43,6 +49,8 @@
     flex-direction:column;
 
     gap:14px;
+
+    min-width:0;
 
 }
 
@@ -57,6 +65,10 @@
     justify-content:space-between;
 
     align-items:center;
+
+    flex-wrap:wrap;
+
+    gap:10px;
 
     margin-bottom:10px;
 
@@ -349,9 +361,7 @@
     grid-template-columns: repeat(4, 1fr);
     gap: 8px;
     margin-top: 4px;
-}
-
-.health-mini-card {
+}.health-mini-card {
     display: flex;
     align-items: center;
     gap: 8px;
@@ -359,6 +369,8 @@
     border-radius: 8px;
     background: rgba(255, 255, 255, 0.03);
     border: 1px solid rgba(255, 255, 255, 0.05);
+    min-width: 0;
+    overflow: hidden;
 }
 
 .health-icon {
@@ -450,6 +462,7 @@
     display: flex;
     align-items: center;
     gap: 10px;
+    flex-wrap: wrap;
 }
 
 .legend-pills {
@@ -458,6 +471,7 @@
     gap: 8px;
     font-size: 11px;
     color: #94a3b8;
+    flex-wrap: wrap;
 }
 
 .legend-pill {
@@ -852,6 +866,12 @@
 
     }
 
+    .system-health-grid{
+
+        grid-template-columns:repeat(2,1fr);
+
+    }
+
     .card-header{
 
         flex-direction:column;
@@ -871,6 +891,16 @@
     .trend-placeholder{
 
         height:180px;
+
+    }
+
+}
+
+@media(max-width:420px){
+
+    .system-health-grid{
+
+        grid-template-columns:1fr;
 
     }
 
