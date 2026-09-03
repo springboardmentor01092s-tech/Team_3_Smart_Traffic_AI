@@ -216,6 +216,10 @@
 
     margin-left: 210px;
 
+    max-width: 100%;
+
+    overflow-x: hidden;
+
     padding:
 
         76px 16px 16px 16px;
