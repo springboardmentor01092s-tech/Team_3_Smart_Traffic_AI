@@ -1,0 +1,60 @@
+version: "3.9"
+
+# TrafficVision AI - full stack (Milestone 4 deployment)
+#
+# Usage:
+#   1. cp .env.example .env   and fill in real values
+#   2. docker compose up --build
+#   3. Frontend:  http://localhost:3000
+#      Backend:   http://localhost:8000/docs
+#
+# This is also what a cloud deployment (AWS ECS/EC2, Azure Container
+# Apps/App Service, etc.) runs — the same three services, just pointed
+# at managed infrastructure instead of local containers.
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-trafficvision}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-trafficvision}
+      POSTGRES_DB: ${POSTGRES_DB:-trafficvision}
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-trafficvision}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    ports:
+      - "5433:5432"
+
+  backend:
+    build:
+      context: ./Backend
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql+psycopg2://${POSTGRES_USER:-trafficvision}:${POSTGRES_PASSWORD:-trafficvision}@db:5432/${POSTGRES_DB:-trafficvision}
+      SECRET_KEY: ${SECRET_KEY:-change-this-in-production}
+      ACCESS_TOKEN_EXPIRE_MINUTES: ${ACCESS_TOKEN_EXPIRE_MINUTES:-60}
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-http://localhost:3000}
+    ports:
+      - "8000:8000"
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        REACT_APP_API_URL: ${REACT_APP_API_URL:-http://localhost:8000}
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "3000:80"
+
+volumes:
+  db_data:
