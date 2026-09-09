@@ -1,30 +1,27 @@
-# TrafficVision AI - Frontend (React) production image
-# Stage 1: build the static React app
-FROM node:20-alpine AS build
+# TrafficVision AI - Backend (FastAPI) production image
+FROM python:3.11-slim
 
 WORKDIR /app
 
-COPY package.json package-lock.json ./
-RUN npm ci --no-audit --no-fund
+# System deps needed by psycopg2 (Postgres driver) and general builds
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends gcc libpq-dev curl \
+    && rm -rf /var/lib/apt/lists/*
 
+# Install Python dependencies first for better layer caching
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy application source
 COPY . .
 
-# Backend URL the built frontend should call, e.g.:
-#   docker build --build-arg REACT_APP_API_URL=https://api.trafficvision.example.com .
-ARG REACT_APP_API_URL=http://localhost:8000
-ENV REACT_APP_API_URL=$REACT_APP_API_URL
+# Non-root user for security
+RUN useradd -m appuser && chown -R appuser:appuser /app
+USER appuser
 
-RUN npm run build
-
-# Stage 2: serve the build with nginx
-FROM nginx:1.27-alpine
-
-COPY nginx.conf /etc/nginx/conf.d/default.conf
-COPY --from=build /app/build /usr/share/nginx/html
-
-EXPOSE 80
+EXPOSE 8000
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-    CMD wget -q --spider http://localhost:80/ || exit 1
+    CMD curl -f http://localhost:8000/ || exit 1
 
-CMD ["nginx", "-g", "daemon off;"]
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
